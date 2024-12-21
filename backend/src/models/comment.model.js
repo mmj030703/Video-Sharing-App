@@ -1,13 +1,13 @@
 import mongoose, { Schema } from "mongoose";
 
 const commentSchema = new Schema({
-    userId: {
+    user: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true,
         index: true
     },
-    videoId: {
+    video: {
         type: Schema.Types.ObjectId,
         ref: "Video",
         required: true,

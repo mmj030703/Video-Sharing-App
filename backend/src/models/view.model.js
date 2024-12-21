@@ -1,13 +1,13 @@
 import mongoose, { Schema } from "mongoose";
 
 const viewSchema = new Schema({
-    userId: {
+    user: {
         type: Schema.Types.ObjectId,
         ref: "User",
         default: null,
         index: true
     },
-    videoId: {
+    video: {
         type: Schema.Types.ObjectId,
         ref: "Video",
         required: true,
@@ -15,8 +15,7 @@ const viewSchema = new Schema({
     },
     guestId: {
         type: String,
-        default: null,
-        unique: true
+        default: null
     }
 }, { timestamps: true });
 

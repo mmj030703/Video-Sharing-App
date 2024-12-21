@@ -48,3 +48,12 @@ export function getOptimizedUrl(publicId, resourceType, width = 720, height = 40
         video_codec: 'auto'
     });
 }
+
+export const deleteMultipleMedia = async (publicIds) => {
+    try {
+        const response = await cloudinary.api.delete_resources(publicIds);
+        console.log('Delete Response:', response);
+    } catch (error) {
+        console.error('Error deleting media:', error);
+    }
+};

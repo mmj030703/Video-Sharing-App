@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 const channelSchema = new Schema({
-    ownerId: {
+    user: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true
@@ -28,10 +28,18 @@ const channelSchema = new Schema({
         type: String,
         required: true
     },
+    coverImagePublicId: {
+        type: String,
+        required: true
+    },
     avatar: {
         type: String,
         required: true
-    }
+    },
+    avatarPublicId: {
+        type: String,
+        required: true
+    },
 }, { timestamps: true });
 
 const Channel = mongoose.model("Channel", channelSchema);

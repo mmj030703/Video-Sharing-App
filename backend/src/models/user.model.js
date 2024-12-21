@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const userSchema = new Schema({
     username: {
@@ -29,8 +30,36 @@ const userSchema = new Schema({
     avatar: {
         type: String,
         default: "https://res.cloudinary.com/mmj030703/image/upload/v1734079310/default%20user.png"
+    },
+    avatarPublicId: {
+        type: String,
+        required: true
+    },
+    refreshToken: {
+        type: String,
+        default: null
     }
 }, { timestamps: true });
+
+
+// user methods
+userSchema.methods.generateJwtToken = function (data, expiration) {
+    return jwt.sign(data, process.env.JWT_SECRET_KEY, {
+        expiresIn: expiration
+    });
+}
+
+userSchema.methods.verifyRefreshToken = function (token) {
+    if (this.refreshToken !== token) {
+        return false;
+    }
+
+    try {
+        return jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (error) {
+        throw error;
+    }
+}
 
 userSchema.pre('save', async function (next) {
     try {

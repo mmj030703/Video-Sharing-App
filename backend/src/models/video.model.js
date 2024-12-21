@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 const videoSchema = new Schema({
-    channelId: {
+    channel: {
         type: Schema.Types.ObjectId,
         ref: "Channel",
         required: true
@@ -10,7 +10,7 @@ const videoSchema = new Schema({
         type: String,
         required: true,
         trim: true,
-        index: true
+        index: "text"   // defining text index for efficient search functionality
     },
     description: {
         type: String,
@@ -22,7 +22,7 @@ const videoSchema = new Schema({
         required: true
     },
     duration: {
-        type: Number,
+        type: Number,   // in seconds as per recieved by cloudinary
         required: true,
         default: 0,
         min: [0, 'Duration cannot be negative']
@@ -44,6 +44,10 @@ const videoSchema = new Schema({
         }
     ],
     thumbnail: {
+        type: String,
+        required: true
+    },
+    thumbnailPublicId: {
         type: String,
         required: true
     }

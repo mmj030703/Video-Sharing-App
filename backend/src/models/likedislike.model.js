@@ -1,13 +1,13 @@
 import mongoose, { Schema } from "mongoose";
 
 const likesDislikesSchema = new Schema({
-    userId: {
+    user: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true,
         index: true
     },
-    videoId: {
+    video: {
         type: Schema.Types.ObjectId,
         ref: "Video",
         required: true,
@@ -18,6 +18,8 @@ const likesDislikesSchema = new Schema({
         required: true
     }
 }, { timestamps: true });
+
+likesDislikesSchema.index({ video: 1, type: 1 });
 
 const LikesDislikes = mongoose.model('LikesDislikes', likesDislikesSchema);
 
