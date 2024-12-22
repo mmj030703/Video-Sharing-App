@@ -32,8 +32,7 @@ const userSchema = new Schema({
         default: "https://res.cloudinary.com/mmj030703/image/upload/v1734079310/default%20user.png"
     },
     avatarPublicId: {
-        type: String,
-        required: true
+        type: String
     },
     refreshToken: {
         type: String,

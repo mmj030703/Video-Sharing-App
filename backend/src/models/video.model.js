@@ -21,6 +21,10 @@ const videoSchema = new Schema({
         type: String,
         required: true
     },
+    videoPublicId: {
+        type: String,
+        required: true
+    },
     duration: {
         type: Number,   // in seconds as per recieved by cloudinary
         required: true,
