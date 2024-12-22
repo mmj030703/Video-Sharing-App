@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { log } from 'console';
 import fs from "fs";
 
 // Configuration
@@ -27,7 +28,7 @@ export async function uploadToCloudinary(fileLocalPath) {
         console.log("Upload Result:", uploadResult);
         fs.unlinkSync(fileLocalPath);
         // Return the secure URL of the uploaded file
-        return uploadResult.secure_url;
+        return uploadResult;
     } catch (error) {
         console.error("Error uploading to Cloudinary:", error.message);
         fs.unlinkSync(fileLocalPath);

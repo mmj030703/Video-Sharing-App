@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 import { getOptimizedUrl, uploadToCloudinary } from "../utils/cloudinary.js";
 import { doEmptyFieldExist, isEmailValid } from "../utils/validations.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import fs from "fs";
 
 // Controller to register user
 export async function registerUser(req, res, next) {
@@ -12,7 +12,8 @@ export async function registerUser(req, res, next) {
 
         // access data from req.body
         const { username, email, password } = req.body;
-        let avatarPath = null;
+        const avatarObj = req.file;
+        let avatarPath = avatarObj.path;
 
         // validate user data
         if (doEmptyFieldExist(username, email, password)) {
@@ -41,7 +42,14 @@ export async function registerUser(req, res, next) {
             return res.status(400).json({ error: null, message: "Avatar should be uploaded !" });
         }
 
-        avatarPath = req.file.path;
+        // Validating avatar for type and size
+        if (avatarObj.mimetype.split("/")[0] !== "image") {
+            return res.status(400).json({ error: null, message: "Avatar should be an image !" });
+        }
+
+        if (avatarObj.size > 2 * 1024 * 1024) {
+            return res.status(400).json({ error: null, message: "Avatar file size exceeded !" });
+        }
 
         let avatar = null;
         let avatarOptimisedUrl = null;
@@ -73,6 +81,13 @@ export async function registerUser(req, res, next) {
         res.status(201).send({ status: "success", message: "User registered successfully !", data: { username: user.username, email: user.email } });
     } catch (error) {
         return res.status(500).json({ error: error, message: "User Registeration:: Internal Server Error !" });
+    } finally {
+        if (req.file) {
+            const avatarPath = req.file.path;
+            if (fs.existsSync(avatarPath)) {
+                fs.unlinkSync(avatarPath);
+            }
+        }
     }
 }
 
@@ -160,13 +175,13 @@ export async function sendAccessToken(req, res, next) {
             const isRefreshTokenValid = user.verifyRefreshToken(refreshToken);
 
             if (!isRefreshTokenValid) {
-                return res.status(401).json({ error: error, message: "Invalid refresh token." });
+                return res.status(403).json({ error: error, message: "Invalid refresh token." });
             }
         } catch (error) {
             if (error.name === "TokenExpiredError") {
                 return res.status(403).json({ error: error, message: "Refresh token expired. Please log in again." });
             }
-            return res.status(401).json({ error: error, message: "An error occurred while verifying refresh token !" });
+            return res.status(403).json({ error: error, message: "Invalid refresh token." });
         }
 
         const userData = { username: user.username, email: user.email };
@@ -174,7 +189,7 @@ export async function sendAccessToken(req, res, next) {
 
         res.status(200).send({ status: "success", message: "Access token generated successfully.", data: { ...userData, accessToken } });
     } catch (error) {
-        return res.status(500).json({ error, message: "Internal Server Error !" });
+        return res.status(500).json({ error, message: "Send Access Token:: Internal Server Error !" });
     }
 }
 
@@ -185,7 +200,7 @@ export async function logoutUser(req, res, next) {
         const user = await User.findById(userId);
 
         if (!user) {
-            return res.status(400).json({ error: null, message: "An error occurred while finding the user !" });
+            return res.status(404).json({ error: null, message: "User not found !" });
         }
 
         user.refreshToken = null;
