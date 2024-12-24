@@ -39,7 +39,7 @@ jest/
 .cypress/
 
 # React-specific
-public/
+frontend/public/
 *.map
 .eslintcache
 
