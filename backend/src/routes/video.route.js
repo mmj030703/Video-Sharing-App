@@ -6,7 +6,7 @@ const videoRouter = express.Router();
 
 videoRouter.get("/category/:category", getAllVideosByCategory);
 videoRouter.get("/:id", updateVideoViews, getVideoById);
-videoRouter.get("/:channelId", getVideosByChannelId);
-videoRouter.get("/search", getVideosByTitle);
+videoRouter.get("/channel/:channelId", getVideosByChannelId);
+videoRouter.get("/search/title", getVideosByTitle);
 
 export default videoRouter;

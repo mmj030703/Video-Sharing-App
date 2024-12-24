@@ -6,6 +6,8 @@ import LikesDislikes from "../models/likedislike.model.js";
 import View from "../models/view.model.js";
 import { deleteMultipleMedia, getOptimizedUrl, uploadToCloudinary } from "../utils/cloudinary.js";
 import { doEmptyFieldExist, isValidMongoDBObjectId } from "../utils/validations.js";
+import fs from "fs";
+import Comment from "../models/comment.model.js";
 
 export async function getChannelById(req, res, next) {
     try {
@@ -45,15 +47,17 @@ export async function getChannelById(req, res, next) {
 
 export async function createChannel(req, res, next) {
     try {
-        const { userId, handle, title, description } = req.body;
+        const { userId, handle: channelHandle, title, description } = req.body;
 
-        if (!doEmptyFieldExist(userId, handle, title, description)) {
+        if (doEmptyFieldExist(userId, channelHandle, title, description)) {
             return res.status(400).json({ error: null, message: "Required fields are missing !" });
         }
 
         if (!isValidMongoDBObjectId(userId)) {
             return res.status(400).json({ error: null, message: "User Id is not a valid Id !" });
         }
+
+        const handle = channelHandle.toLowerCase();
 
         const [user, existingChannel] = await Promise.all([
             User.findById(userId).select("_id"),
@@ -69,22 +73,32 @@ export async function createChannel(req, res, next) {
         }
 
         // Handle images
-        const images = req.files;
+        // req.file -> structure -> 
+        /*
+            { // req.files
+                
+                Fields as arrays
+                fieldName: [ 
+                    {obj} 
+                ] 
+            }
+        */
+        const images = req.files;   // req.files is an object
 
-        if (!images || !images[0] || !images[1]) {
+        if (!images || Object.keys(images).length < 2) {
             return res.status(400).json({ error: null, message: "Images are required !" });
         }
 
-        if (images.some((image) => !image.mimetype.startsWith("image"))) {
+        if (Object.keys(images).some((imageKey) => !(images[imageKey][0].mimetype.startsWith("image")))) {
             return res.status(400).json({ error: null, message: "Only images are allowed !" });
         }
 
-        if (images.some((image) => !image.size <= 2 * 1024 * 1024)) {
+        if (Object.keys(images).some((imageKey) => !(images[imageKey][0].size <= 2 * 1024 * 1024))) {
             return res.status(400).json({ error: null, message: "Images upto 2mb size are only allowed !" });
         }
 
-        const coverImagePath = images[0].path
-        const avatarPath = images[1].path
+        const coverImagePath = images['coverImage'][0].path
+        const avatarPath = images['avatar'][0].path
 
         let coverImage = null;
         let avatar = null;
@@ -135,18 +149,31 @@ export async function createChannel(req, res, next) {
                 error: null,
                 message: "Created Channel:: Internal Server Error"
             });
+    } finally {
+        // Check performance if slows convert to async using promises
+        if (req.files) {
+            const images = req.files;
+            const imagesKeys = Object.keys(req.files);
+
+            imagesKeys.forEach(imageKey => {
+                if (fs.existsSync(images[imageKey][0].path)) {
+                    fs.unlinkSync(images[imageKey][0].path);
+                }
+            });
+        }
     }
 }
 
 export async function updateChannelById(req, res, next) {
     try {
-        const { channelId, userId, title, description } = req.body;
+        const { id: channelId } = req.params;
+        const { userId, title, description } = req.body;
 
-        if (!doEmptyFieldExist(channelId, userId)) {
+        if (doEmptyFieldExist(channelId, userId)) {
             return res.status(400).json({ error: null, message: "Required fields are missing !" });
         }
 
-        if (title.trim() === "" || description.trim() === "") {
+        if ((title && title.trim() === "") || (description && description.trim() === "")) {
             return res.status(400).json({ error: null, message: "Title and Description cannot be empty !" });
         }
 
@@ -176,38 +203,40 @@ export async function updateChannelById(req, res, next) {
         let coverImageUrl = null;
         let avatarUrl = null;
 
-        if (req.files && req.files.length > 0) {
+        console.log(req.files)
+
+        if (req.files && Object.keys(req.files).length > 0) {
             try {
                 // Check images type and size
-                if (req.files.some((image) => !image.mimetype.startsWith("image"))) {
+                if (Object.keys(req.files).some((image) => !req.files[image][0].mimetype.startsWith("image"))) {
                     return res.status(400).json({ error: null, message: "Only images are allowed !" });
                 }
 
-                if (req.files.some((image) => !image.size <= 2 * 1024 * 1024)) {
+                if (Object.keys(req.files).some((image) => !(req.files[image][0].size <= 2 * 1024 * 1024))) {
                     return res.status(400).json({ error: null, message: "Images upto 2mb size are only allowed !" });
                 }
 
                 // delete current Images which has to be updated
-                if (req.files.length === 2) {
+                if (Object.keys(req.files).length === 2) {
                     await deleteMultipleMedia([channel.coverImagePublicId, channel.avatarPublicId]);
 
                     [coverImage, avatar] = await Promise.all([
-                        uploadToCloudinary(req.files[0].path),
-                        uploadToCloudinary(req.files[1].path)
+                        uploadToCloudinary(req.files[Object.keys(req.files)[0]][0].path),
+                        uploadToCloudinary(req.files[Object.keys(req.files)[1]][0].path)
                     ]);
 
                     coverImageUrl = getOptimizedUrl(coverImage.public_id, coverImage.resource_type, COVER_IMAGE_DIMENSIONS.width, COVER_IMAGE_DIMENSIONS.height) || coverImage.secure_url;
                     avatarUrl = getOptimizedUrl(avatar.public_id, avatar.resource_type, AVATAR_DIMENSIONS.width, AVATAR_DIMENSIONS.height) || avatar.secure_url;
 
-                } else if (req.files[0].fieldname === "avatar") {
+                } else if (Object.keys(req.files)[0] === "avatar") {
                     await deleteMultipleMedia([channel.avatarPublicId]);
 
-                    avatar = await uploadToCloudinary(req.files[0].path);
+                    avatar = await uploadToCloudinary(req.files[Object.keys(req.files)[0]][0].path);
                     avatarUrl = getOptimizedUrl(avatar.public_id, avatar.resource_type, AVATAR_DIMENSIONS.width, AVATAR_DIMENSIONS.height) || avatar.secure_url;
-                } else if (req.files[0].fieldname === "coverImage") {
+                } else if (Object.keys(req.files)[0] === "coverImage") {
                     await deleteMultipleMedia([channel.coverImagePublicId]);
 
-                    coverImage = await uploadToCloudinary(req.files[0].path);
+                    coverImage = await uploadToCloudinary(req.files[Object.keys(req.files)[0]][0].path);
                     coverImageUrl = getOptimizedUrl(coverImage.public_id, coverImage.resource_type, COVER_IMAGE_DIMENSIONS.width, COVER_IMAGE_DIMENSIONS.height) || coverImage.secure_url;
                 }
             } catch (error) {
@@ -215,6 +244,9 @@ export async function updateChannelById(req, res, next) {
                 return res.status(500).json({ error: error.message || error, message: "Cloudinary Channel Images Updation:: Internal Server Error !" });
             }
         }
+
+        console.log(avatar)
+        console.log(avatarUrl)
 
         // Update fields explicitly
         if (title !== undefined) channel.title = title;
@@ -247,11 +279,24 @@ export async function updateChannelById(req, res, next) {
                 error: null,
                 message: "Update Channel:: Internal Server Error"
             });
+    } finally {
+        // Check performance if slows convert to async using promises
+        if (req.files) {
+            const images = req.files;
+            const imagesKeys = Object.keys(req.files);
+
+            imagesKeys.forEach(imageKey => {
+                if (fs.existsSync(images[imageKey][0].path)) {
+                    fs.unlinkSync(images[imageKey][0].path);
+                }
+            });
+        }
     }
 }
 
 export async function uploadVideo(req, res, next) {
     try {
+        // For now we are just accepting one category from frontend. In future we will add multiple categories
         const { channelId, userId, title, description, categories, tags } = req.body;
 
         if (doEmptyFieldExist(channelId, userId, title, description)) {
@@ -289,28 +334,28 @@ export async function uploadVideo(req, res, next) {
         // Handling Images
         const media = req.files;
 
-        if (!media || media.length < 2) {
+        if (!media || Object.keys(media).length < 2) {
             return res.status(400).json({ error: null, message: "All media files are required !" });
         }
 
-        if (!media[0].mimetype.startsWith("image")) {
+        if (!media['thumbnail'][0].mimetype.startsWith("image")) {
             return res.status(400).json({ error: null, message: "First file should be an image !" });
         }
 
-        if (!media[0].size <= 2 * 1024 * 1024) {
+        if (!(media['thumbnail'][0].size <= 2 * 1024 * 1024)) {
             return res.status(400).json({ error: null, message: "Image size exceeded ! Only 2mb files are allowed. !" });
         }
 
-        if (!media[1].mimetype.startsWith("video")) {
+        if (!media['video'][0].mimetype.startsWith("video")) {
             return res.status(400).json({ error: null, message: "Second file should be a video !" });
         }
 
-        if (!media[1].size <= 100 * 1024 * 1024) {
+        if (!(media['video'][0].size <= 100 * 1024 * 1024)) {
             return res.status(400).json({ error: null, message: "Video size exceeded ! Only 100mb files are allowed." });
         }
 
-        const videoPath = media[0].path;
-        const thumbnailPath = media[1].path;
+        const videoPath = media['thumbnail'][0].path;
+        const thumbnailPath = media['video'][0].path;
 
         let video = null;
         let thumbnail = null;
@@ -335,6 +380,7 @@ export async function uploadVideo(req, res, next) {
             title,
             description,
             videoUrl: optimisedVideoUrl,
+            videoPublicId: video.public_id,
             duration: video.duration,  // in seconds
             categories,
             tags,
@@ -362,12 +408,24 @@ export async function uploadVideo(req, res, next) {
                 error: error.message || error,
                 message: "Upload Video:: Internal Server Error"
             });
+    } finally {
+        // Check performance if slows convert to async using promises
+        if (req.files) {
+            const mediafiles = req.files;
+            const keys = Object.keys(mediafiles);
+
+            keys.forEach(Key => {
+                if (fs.existsSync(mediafiles[Key][0].path)) {
+                    fs.unlinkSync(mediafiles[Key][0].path);
+                }
+            });
+        }
     }
 }
 
 export async function updateVideoById(req, res, next) {
     try {
-        const { videoId, userId, title, description, categories, tags } = req.body;
+        const { videoId, userId, title, description } = req.body;
 
         if (doEmptyFieldExist(videoId, userId)) {
             return res.status(400).json({ error: null, message: "VideoId and UserId are required !" });
@@ -385,19 +443,6 @@ export async function updateVideoById(req, res, next) {
             return res.status(400).json({ error: null, message: "Id's provided are not valid!" });
         }
 
-        if (categories && categories.length === 0) {
-            return res.status(400).json({ error: null, message: "Atleast one category should be added !" });
-        }
-
-        if (tags && tags.length === 0) {
-            return res
-                .status(400)
-                .json({
-                    error: null,
-                    message: "Atleast one tag should be added !"
-                });
-        }
-
         const existingVideo = await Video.findById(videoId);
 
         if (!existingVideo) {
@@ -413,20 +458,19 @@ export async function updateVideoById(req, res, next) {
 
         // Handling Images
         const media = req.file;
+        let thumbnail = null;
+        let optimisedThumbnailUrl = null;
 
         if (media) {
             if (!media.mimetype.startsWith("image")) {
                 return res.status(400).json({ error: null, message: "First file should be an image !" });
             }
 
-            if (!media.size <= 2 * 1024 * 1024) {
+            if (!(media.size <= 2 * 1024 * 1024)) {
                 return res.status(400).json({ error: null, message: "Image size exceeded ! Only 2mb files are allowed. !" });
             }
 
             const thumbnailPath = media.path;
-
-            let thumbnail = null;
-            let optimisedThumbnailUrl = null;
 
             try {
                 await deleteMultipleMedia([existingVideo.thumbnailPublicId]);
@@ -444,15 +488,11 @@ export async function updateVideoById(req, res, next) {
             {
                 title: title && title.trim() !== "" ? title : existingVideo.title,
                 description: description && description.trim() !== "" ? description : existingVideo.description,
-                categories: categories && categories.length > 0 ? categories : existingVideo.categories,
-                tags: tags && tags.length > 0 ? tags : existingVideo.tags,
                 thumbnail: optimisedThumbnailUrl ? optimisedThumbnailUrl : existingVideo.thumbnail,
                 thumbnailPublicId: thumbnail ? thumbnail.public_id : existingVideo.thumbnailPublicId
             },
             { runValidators: true, new: true }
         );
-
-        await updatedVideo.save();
 
         if (!updatedVideo) {
             return res.status(400).json({ error: null, message: "An error occurred while updating the video !" });
@@ -474,22 +514,31 @@ export async function updateVideoById(req, res, next) {
                 error: error.message || error,
                 message: "Update Video:: Internal Server Error"
             });
+    } finally {
+        // Check performance if slows convert to async using promises
+        if (req.file) {
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+        }
     }
 }
 
 export async function deleteVideoById(req, res, next) {
     try {
-        const { videoId, userId } = req.body;
+        const { id } = req.params;
+        const { userId } = req.body;
 
-        if (doEmptyFieldExist(videoId, userId)) {
+
+        if (doEmptyFieldExist(id, userId)) {
             return res.status(400).json({ error: null, message: "VideoId and UserId are required !" });
         }
 
-        if (!isValidMongoDBObjectId(videoId) || !isValidMongoDBObjectId(userId)) {
+        if (!isValidMongoDBObjectId(id) || !isValidMongoDBObjectId(userId)) {
             return res.status(400).json({ error: null, message: "Id's provided are not valid!" });
         }
 
-        const existingVideo = await Video.findById(videoId);
+        const existingVideo = await Video.findById(id);
 
         if (!existingVideo) {
             return res.status(404).json({ error: null, message: "Video not found !" });
@@ -500,6 +549,12 @@ export async function deleteVideoById(req, res, next) {
 
         if (existingChannel.user.toString() !== userId) {
             return res.status(403).json({ error: null, message: "Unauthorized access !" });
+        }
+
+        const deleteCount = await Video.findByIdAndDelete(id);
+
+        if (!deleteCount) {
+            return res.status(400).json({ error: null, message: "Video deletion failed!" });
         }
 
         let maxTries = 3;
@@ -522,12 +577,6 @@ export async function deleteVideoById(req, res, next) {
             }
         }
 
-        const deleteCount = await Video.findByIdAndDelete(videoId);
-
-        if (!deleteCount) {
-            return res.status(400).json({ error: null, message: "Video deletion failed!" });
-        }
-
         let deleteCommentsCount = 0;
         let deleteLikesCount = 0;
         let deleteViewsCount = 0;
@@ -535,9 +584,9 @@ export async function deleteVideoById(req, res, next) {
         try {
             // Deleting associated comments, likes, views, etc.
             [deleteCommentsCount, deleteLikesCount, deleteViewsCount] = await Promise.all([
-                Comment.deleteMany({ video: videoId }),
-                LikesDislikes.deleteMany({ video: videoId }),
-                View.deleteMany({ video: videoId })
+                Comment.deleteMany({ video: id }),
+                LikesDislikes.deleteMany({ video: id }),
+                View.deleteMany({ video: id })
             ]);
         } catch (error) {
             console.log("Delete Video Associated Data Error: ", error.message || error);
@@ -549,7 +598,7 @@ export async function deleteVideoById(req, res, next) {
             .send({
                 status: "Success",
                 message: "Video Deleted successfully",
-                data: { videoId, videoDeleteCount: deleteCount, deleteCommentsCount, deleteLikesCount, deleteViewsCount }
+                data: { videoId: id, videoDeleteCount: deleteCount, deleteCommentsCount, deleteLikesCount, deleteViewsCount }
             });
 
     } catch (error) {

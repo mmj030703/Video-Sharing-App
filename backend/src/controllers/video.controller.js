@@ -9,17 +9,25 @@ export async function getAllVideosByCategory(req, res, next) {
         let { category } = req.params;
 
         if (!category || category.trim() === "") {
-            return res.status(400).json({ message: "Category is required !" });
+            return res.status(400).json({ error: null, message: "Category is required !" });
         }
 
         category = category.trim().toLowerCase();
 
+        if (category !== "all" && !isValidMongoDBObjectId(category)) {
+            return res.status(400).json({ error: null, message: "Invalid id provided !" });
+        }
+
         let videos;
 
         if (category === "all") {
-            videos = await Video.find();
+            videos = await Video.find()
+                .populate("channel", "title avatar")
+                .select("-description -videoUrl -videoPublicId -categories -tags -thumbnailPublicId");
         } else {
-            videos = await Video.find({ categories: { $in: [category] } });
+            videos = await Video.find({ categories: { $in: [category] } })
+                .populate("channel", "title avatar")
+                .select("-description -videoUrl -videoPublicId -categories -tags -thumbnailPublicId");
         }
 
         if (!videos.length) {
@@ -42,14 +50,15 @@ export async function getVideoById(req, res, next) {
 
         const video = await Video
             .findById(id)
-            .populate("channel");
+            .populate("channel", "title avatar")
+            .select("-categories -tags -thumbnail -thumbnailPublicId -videoPublicId");
 
         if (!video) {
             return res.status(404).json({ error: null, message: "No video found !" });
         }
 
         // Parallely fetching likes, comments, recommendedVideos to optimise time        
-        const [likes, comments, recommendedVideos, views] = await Promise.all([
+        const [likes, views] = await Promise.all([
             LikesDislikes.find({ video: id, type: true }), // type true for like
             View.find({ video: id })
         ]);
@@ -80,7 +89,10 @@ export async function getVideosByChannelId(req, res, next) {
             return res.status(400).json({ error: null, message: "Invalid channel id !" });
         }
 
-        const videos = await Video.find({ channel: channelId });
+        const videos = await Video
+            .find({ channel: channelId })
+            .populate("channel", "title avatar")
+            .select("-description -videoUrl -videoPublicId -categories -tags -thumbnailPublicId");
 
         if (!videos.length) {
             return res.status(404).json({ error: null, message: "No videos found for the given channel !" });
@@ -95,7 +107,7 @@ export async function getVideosByChannelId(req, res, next) {
     }
 }
 
-export async function getVideosByTitle(params) {
+export async function getVideosByTitle(req, res, next) {
     try {
         const { title } = req.body;
 
@@ -107,6 +119,8 @@ export async function getVideosByTitle(params) {
             .find({
                 $text: { $search: title } // $search will check each word in the title and try to find whether it is available in the title field or not and the search is efficient and case-insensitive
             })
+            .populate("channel", "title avatar")
+            .select("-videoUrl -videoPublicId -categories -tags -thumbnailPublicId")
             .limit(10)
             .sort({ score: { $meta: "textScore" } });  // Sort by text match relevance
 

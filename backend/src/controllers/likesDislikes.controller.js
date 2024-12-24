@@ -1,12 +1,21 @@
 import LikesDislikes from "../models/likedislike.model.js";
 import User from "../models/user.model.js";
 import Video from "../models/video.model.js";
+import { isValidMongoDBObjectId } from "../utils/validations.js";
 
 export async function updateLikesDislikes(req, res, next) {
     try {
         const { userId, videoId, type, operation, alreadyLiked, alreadyDisliked } = req.body;
 
-        if (!isValidMongoDBObjectId(userId) || !isValidMongoDBObjectId(videoId) || !type || !operation || typeof operation !== "string" || !["add", "remove"].includes(operation)) {
+        if (!isValidMongoDBObjectId(userId) ||
+            !isValidMongoDBObjectId(videoId) ||
+            typeof type !== "boolean" ||
+            !operation ||
+            typeof operation !== "string" ||
+            !["add", "remove"].includes(operation) ||
+            typeof alreadyLiked !== "boolean" ||
+            typeof alreadyDisliked !== "boolean"
+        ) {
             return res.status(400).json({ error: null, message: "Invalid input data !" });
         }
 
@@ -18,6 +27,10 @@ export async function updateLikesDislikes(req, res, next) {
             }
             if (type === false && alreadyLiked) {
                 await LikesDislikes.deleteOne({ user: userId, video: videoId, type: true });
+            }
+
+            if ((type === true && alreadyLiked) || (type === false && alreadyDisliked)) {
+                return res.status(400).json({ error: null, message: `Content is already ${type === true ? 'liked' : 'disliked'} !` });
             }
 
             data = await LikesDislikes.create({

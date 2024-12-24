@@ -16,17 +16,17 @@ channelRouter.post(
     ]),
     createChannel
 );
-channelRouter.patch("update/:id", authenticateUser, dynamicUpload.fields([
+channelRouter.patch("/update/:id", authenticateUser, dynamicUpload.fields([
     { name: "coverImage", maxCount: 1 },
     { name: "avatar", maxCount: 1 }
 ]), updateChannelById);
 
 // Channel -> Video Related Routes
-channelRouter.post("videos/upload", authenticateUser, dynamicUpload.fields([
+channelRouter.post("/videos/upload", authenticateUser, dynamicUpload.fields([
     { name: "video", maxCount: 1 },
     { name: "thumbnail", maxCount: 1 }
 ]), uploadVideo);
-channelRouter.patch("videos/update/:id", authenticateUser, dynamicUpload.single('thumbnail'), updateVideoById);
-channelRouter.delete("videos/delete/:id", authenticateUser, deleteVideoById);
+channelRouter.patch("/videos/update/:id", authenticateUser, dynamicUpload.single('thumbnail'), updateVideoById);
+channelRouter.delete("/videos/delete/:id", authenticateUser, deleteVideoById);
 
 export default channelRouter;

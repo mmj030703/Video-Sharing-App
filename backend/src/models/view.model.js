@@ -12,10 +12,6 @@ const viewSchema = new Schema({
         ref: "Video",
         required: true,
         index: true
-    },
-    guestId: {
-        type: String,
-        default: null
     }
 }, { timestamps: true });
 

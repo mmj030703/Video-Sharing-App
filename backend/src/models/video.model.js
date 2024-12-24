@@ -33,9 +33,9 @@ const videoSchema = new Schema({
     },
     categories: [
         {
-            type: String,
-            trim: true,
-            lowercase: true,
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "Category",
             index: true
         }
     ],
@@ -62,8 +62,8 @@ videoSchema.path('categories').validate(function (value) {
 }, "Atleast one category should be added !");
 
 videoSchema.path('tags').validate(function (value) {
-    return value && value.length > 2;
-}, "Atleast three tags should be added !");
+    return value && value.length > 0;
+}, "Atleast one tags should be added !");
 
 const Video = mongoose.model('Video', videoSchema);
 

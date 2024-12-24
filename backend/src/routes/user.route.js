@@ -7,7 +7,7 @@ const userRouter = express.Router();
 
 userRouter.post("/register", dynamicUpload.single('avatar'), registerUser);
 userRouter.post("/login", loginUser);
-userRouter.get("/refresh-token", authenticateUser, sendAccessToken);
+userRouter.get("/refresh-token", sendAccessToken);
 userRouter.post("/logout", authenticateUser, logoutUser);
 
 export default userRouter;

@@ -3,22 +3,19 @@ import { doEmptyFieldExist, isValidMongoDBObjectId } from "../utils/validations.
 
 export async function updateVideoViews(req, res, next) {
     try {
-        const { userId, videoId, guestId, userRegistered } = req.body;
+        const { id: videoId } = req.params;
+        const { userId, userRegistered } = req.body;
 
         // Validations
         if (userRegistered && !userId) {
             return res.status(400).json({ error: null, message: "UserId not provided !" });
         }
 
-        if (!userRegistered && (!guestId || guestId.trim() === "")) {
-            return res.status(400).json({ error: null, message: "GuestId not provided !" });
-        }
-
         if (!videoId) {
             return res.status(400).json({ error: null, message: "VideoId not provided!" });
         }
 
-        if ((!userId || !isValidMongoDBObjectId(userId)) || !isValidMongoDBObjectId(videoId)) {
+        if ((userRegistered && !isValidMongoDBObjectId(userId)) || !isValidMongoDBObjectId(videoId)) {
             return res.status(400).json({ error: null, message: "Invalid id provided !" });
         }
 
@@ -29,9 +26,8 @@ export async function updateVideoViews(req, res, next) {
         while (timesTried < maxRetries) {
             try {
                 const view = await View.create({
-                    userId: userRegistered ? userId : null,
-                    videoId,
-                    guestId: !userRegistered ? guestId : null
+                    user: userRegistered ? userId : null,
+                    video: videoId
                 });
 
                 console.log("Views for video updated !");
