@@ -3,7 +3,7 @@ import Video from "../models/video.model.js";
 
 export async function getAllCategories(req, res, next) {
     try {
-        let { associatedWith } = req.body;
+        let { associatedWith } = req.query;
 
         if (!associatedWith || associatedWith.trim() === "") {
             return res.status(400).json({
