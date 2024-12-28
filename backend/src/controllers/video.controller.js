@@ -30,10 +30,6 @@ export async function getAllVideosByCategory(req, res, next) {
                 .select("-description -videoUrl -videoPublicId -categories -tags -thumbnailPublicId");
         }
 
-        if (!videos.length) {
-            return res.status(404).json({ error: null, message: "No videos found for the given category !" });
-        }
-
         res.status(200).send({ status: "success", message: "Videos fetched successfully !", data: { category, totalItems: videos.length, videos } });
     } catch (error) {
         return res.status(500).json({ error: error.message, message: "Get all videos:: Internal Server Error !" });
@@ -109,7 +105,7 @@ export async function getVideosByChannelId(req, res, next) {
 
 export async function getVideosByTitle(req, res, next) {
     try {
-        const { title } = req.body;
+        const { query: title } = req.query;
 
         if (!title || title.trim() === "") {
             return res.status(400).json({ error: null, message: "Input is empty !" })
@@ -123,10 +119,6 @@ export async function getVideosByTitle(req, res, next) {
             .select("-videoUrl -videoPublicId -categories -tags -thumbnailPublicId")
             .limit(10)
             .sort({ score: { $meta: "textScore" } });  // Sort by text match relevance
-
-        if (!videos.length) {
-            return res.status(404).json({ error: null, message: "Videos with given search was not found !" });
-        }
 
         res.status(200).send({
             status: "success",

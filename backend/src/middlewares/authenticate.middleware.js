@@ -24,9 +24,9 @@ async function authenticateUser(req, res, next) {
         console.log("Token Invalid Error: ", error.message || error);
 
         if (error.name === "TokenExpiredError") {
-            return res.status(401).json({ error: null, message: "Token has expired, please login again!" });
+            return res.status(401).json({ error: null, errorCode: "TOKEN_EXPIRED", message: "Token has expired, please login again!" });
         }
-        return res.status(401).json({ error: null, message: "Invalid token, please login again!" });
+        return res.status(401).json({ error: null, errorCode: "INVALID_TOKEN", message: "Invalid token, please login again!" });
     }
 }
 

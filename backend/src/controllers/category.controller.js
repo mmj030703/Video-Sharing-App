@@ -1,9 +1,9 @@
 import Category from "../models/category.model.js";
-import Video from "../models/video.model.js";
 
 export async function getAllCategories(req, res, next) {
     try {
         let { associatedWith } = req.query;
+
 
         if (!associatedWith || associatedWith.trim() === "") {
             return res.status(400).json({
@@ -14,7 +14,7 @@ export async function getAllCategories(req, res, next) {
 
         associatedWith = associatedWith.toLowerCase();
 
-        const categories = await Video.find({ associatedWith });
+        const categories = await Category.find({ associatedWith });
 
         res
             .status(200)
