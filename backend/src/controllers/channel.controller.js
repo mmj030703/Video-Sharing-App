@@ -334,6 +334,9 @@ export async function uploadVideo(req, res, next) {
         // Handling Images
         const media = req.files;
 
+        console.log(media);
+
+
         if (!media || Object.keys(media).length < 2) {
             return res.status(400).json({ error: null, message: "All media files are required !" });
         }
@@ -354,8 +357,8 @@ export async function uploadVideo(req, res, next) {
             return res.status(400).json({ error: null, message: "Video size exceeded ! Only 100mb files are allowed." });
         }
 
-        const videoPath = media['thumbnail'][0].path;
-        const thumbnailPath = media['video'][0].path;
+        const videoPath = media['video'][0].path;
+        const thumbnailPath = media['thumbnail'][0].path;
 
         let video = null;
         let thumbnail = null;
@@ -368,8 +371,10 @@ export async function uploadVideo(req, res, next) {
                 uploadToCloudinary(thumbnailPath)
             ]);
 
+
             optimisedVideoUrl = getOptimizedUrl(video.public_id, video.resource_type, VIDEO_DIMENSIONS.width, VIDEO_DIMENSIONS.height) || video.secure_url;
             optimisedThumbnailUrl = getOptimizedUrl(thumbnail.public_id, thumbnail.resource_type, THUMBNAIL_DIMENSIONS.width, THUMBNAIL_DIMENSIONS.height) || thumbnail.secure_url;
+            console.log(optimisedVideoUrl, optimisedThumbnailUrl);
         } catch (error) {
             console.log("Cloudinary Video & thumbnail upload error: ", error.message || error);
             return res.status(400).json({ error: error.message || error, message: "Cloudinary Video & thumbnail upload:: Internal Server Error" });

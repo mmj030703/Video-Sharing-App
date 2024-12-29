@@ -73,9 +73,12 @@ function HomePage() {
 
             return (
               <Link to={`/videos/watch/${video._id}`} key={video._id}>
-                <article className="bg-slate-600 rounded-md max-w-[400px]">
+                <article className="bg-slate-600 rounded-md max-w-[400px] min-h-[350px]">
                   <figure>
-                    <img src={video.thumbnail} className="w-full" />
+                    <img
+                      src={video.thumbnail}
+                      className="w-full h-[220px] object-cover"
+                    />
                   </figure>
                   <article className="flex gap-x-4 px-2 py-2">
                     <figure>
@@ -85,7 +88,11 @@ function HomePage() {
                       />
                     </figure>
                     <article className="text-white font-semibold ">
-                      <p className="text-[19px]">{video.title}</p>
+                      <p title={video.title} className="text-[19px]">
+                        {video.title.length > 35
+                          ? video.title.slice(0, 35) + " ..."
+                          : video.title}
+                      </p>
                       <article className="mt-1 space-y-1">
                         <p className="text-[15px] text-slate-300">
                           {video.channel.title}

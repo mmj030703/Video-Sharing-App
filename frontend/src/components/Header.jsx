@@ -40,6 +40,8 @@ function Header() {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
 
+    console.log(token);
+
     const res = await fetch(`/api/v1/users/logout/${userId}`, {
       method: "POST",
       headers: {
@@ -49,8 +51,11 @@ function Header() {
     });
 
     const resJson = await res.json();
+    console.log(resJson);
 
     if (resJson?.status === "success") {
+      console.log("success");
+
       dispatch(
         updateUserData({
           userId: "",
@@ -67,14 +72,18 @@ function Header() {
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
-    } else if (user.errorCode === "INVALID_TOKEN") {
+    } else if (resJson.errorCode === "INVALID_TOKEN") {
       navigate("/login");
-    } else if (user.errorCode === "TOKEN_EXPIRED") {
+    } else if (resJson.errorCode === "TOKEN_EXPIRED") {
+      console.log("failed");
+
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
       if (resJson?.status === "success") {
-        setToken(resJson.data.accessToken);
+        localStorage.setItem("accessToken", resJson.data.accessToken);
+        await handleLogout();
+        return;
       } else if (
         [
           "REFRESH_TOKEN_ERROR",

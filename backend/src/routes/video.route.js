@@ -5,7 +5,7 @@ import { updateVideoViews } from "../middlewares/updateVideoView.middleware.js";
 const videoRouter = express.Router();
 
 videoRouter.get("/category/:category", getAllVideosByCategory);
-videoRouter.get("video/:id", updateVideoViews, getVideoById);
+videoRouter.get("/video/:id", updateVideoViews, getVideoById);
 videoRouter.get("/channel/:channelId", getVideosByChannelId);
 videoRouter.get("/search/title", getVideosByTitle);
 

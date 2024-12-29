@@ -8,6 +8,6 @@ const commentRouter = express.Router();
 commentRouter.post("/add", authenticateUser, addComment);
 commentRouter.patch("/update", authenticateUser, updateComment);
 commentRouter.delete("/delete", authenticateUser, deleteComment);
-commentRouter.get("all/:id", getAllComments);
+commentRouter.get("/all/:id", getAllComments);
 
 export default commentRouter;

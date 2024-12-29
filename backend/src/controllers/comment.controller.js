@@ -15,7 +15,7 @@ export async function addComment(req, res, next) {
         }
 
         if (!message || message.trim() === "") {
-            return res.status(400).json({ error: null, message: "Message not provided !" });
+            return res.status(400).json({ error: null, errorCode: "COMMENT_MESSAGE_MISSING", message: "Message not provided !" });
         }
 
         if (!isValidMongoDBObjectId(userId) || !isValidMongoDBObjectId(videoId)) {
@@ -146,7 +146,7 @@ export async function getAllComments(req, res, next) {
             return res.status(404).json({ error: null, message: "Video not found!" });
         }
 
-        const comments = await Comment.find({ video: id });
+        const comments = await Comment.find({ video: id }).populate("user", "avatar username");
 
         res.status(200).send({
             status: "Success",

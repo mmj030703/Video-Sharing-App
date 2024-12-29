@@ -30,7 +30,7 @@ export async function uploadToCloudinary(fileLocalPath) {
         // Return the secure URL of the uploaded file
         return uploadResult;
     } catch (error) {
-        console.error("Error uploading to Cloudinary:", error.message);
+        console.error("Error uploading to Cloudinary:", error.message || error);
         fs.unlinkSync(fileLocalPath);
         process.exit(1);
     }
@@ -38,16 +38,26 @@ export async function uploadToCloudinary(fileLocalPath) {
 
 // Function to generate optimized image/video URLs
 export function getOptimizedUrl(publicId, resourceType, width = 720, height = 405) {
-    return cloudinary.url(publicId, {
-        resource_type: resourceType,
-        fetch_format: "auto",
-        quality: "auto:eco",
-        crop: "auto",
-        gravity: "auto",
-        width: width,
-        height: height,
-        video_codec: 'auto'
-    });
+    if (resourceType === 'video') {
+        return cloudinary.url(publicId, {
+            resource_type: resourceType,
+            quality: "auto:good",
+            fetch_format: "auto",
+            width: width,
+            height: height,
+            crop: "limit",
+            video_codec: 'auto'
+        });
+    } else {
+        return cloudinary.url(publicId, {
+            resource_type: resourceType,
+            quality: "auto:good",
+            fetch_format: "auto",
+            width: width,
+            height: height,
+            crop: "limit"
+        });
+    }
 }
 
 export const deleteMultipleMedia = async (publicIds) => {
