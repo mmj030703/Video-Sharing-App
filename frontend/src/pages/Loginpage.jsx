@@ -34,7 +34,6 @@ function LoginComponent() {
 
   function handleLogin(e) {
     e.preventDefault();
-    console.log(formData);
 
     const error = validateFormData(formData);
     if (error) return;
@@ -59,10 +58,17 @@ function LoginComponent() {
     if (userData?.status === "success") {
       localStorage.setItem("accessToken", userData.data.accessToken);
       localStorage.setItem("userId", userData.data.userData.userId);
+      localStorage.setItem(
+        "channelId",
+        userData.data.userData.channel.channelId
+      );
 
       dispatch(
         updateUserData({
           ...userData.data.userData,
+          channelCreated: userData.data.userData.channel.channelId
+            ? true
+            : false,
           isLoggedIn: true,
         })
       );

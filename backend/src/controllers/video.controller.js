@@ -91,7 +91,7 @@ export async function getVideosByChannelId(req, res, next) {
         const videos = await Video
             .find({ channel: channelId })
             .populate("channel", "title avatar")
-            .select("-description -videoUrl -videoPublicId -categories -tags -thumbnailPublicId");
+            .select("-videoUrl -videoPublicId -categories -tags -thumbnailPublicId");
 
         if (!videos.length) {
             return res.status(404).json({ error: null, message: "No videos found for the given channel !" });

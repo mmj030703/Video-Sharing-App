@@ -5,7 +5,8 @@ import { isValidMongoDBObjectId } from "../utils/validations.js";
 
 export async function updateLikesDislikes(req, res, next) {
     try {
-        const { userId, videoId, type, operation, alreadyLiked, alreadyDisliked } = req.body;
+        const { id: videoId } = req.params;
+        const { userId, type, operation, alreadyLiked, alreadyDisliked } = req.body;
 
         if (!isValidMongoDBObjectId(userId) ||
             !isValidMongoDBObjectId(videoId) ||
@@ -43,7 +44,7 @@ export async function updateLikesDislikes(req, res, next) {
         }
 
         if (!data) {
-            return res.status(400).json({ error: null, message: "An error occurred while updating likes and dislikes !" });
+            return res.status(400).json({ error: null, errorCode: "LIKE_DISLIKE_UPDATE_ERROR", message: "An error occurred while updating likes and dislikes !" });
         }
 
         res.status(200).send({ status: "success", message: "Operation performed successfully !", data: { operation, type, data } });
@@ -51,6 +52,7 @@ export async function updateLikesDislikes(req, res, next) {
         console.log("Update Likes & Dislikes:", error);
         return res.status(500).json({
             error: error.message || error,
+            errorCode: "LIKE_DISLIKE_UPDATE_ERROR",
             message: "Update Likes & Dislikes:: Internal Server Error !"
         });
     }
@@ -88,7 +90,8 @@ export async function getLikesByVideoId(req, res, next) {
 
 export async function getLikesDislikesStatusOfLoggedInUser(req, res, next) {
     try {
-        const { userId, videoId } = req.body;
+        const { id: videoId } = req.params;
+        const { userId } = req.body;
 
         if (!userId) {
             return res.status(400).json({ error: null, message: "User Id not provided !" });

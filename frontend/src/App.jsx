@@ -6,16 +6,39 @@ import { Provider, useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { addCategories } from "./utils/slices/appSlice.js";
 import { updateUserData } from "./utils/slices/userSlice.js";
+import Toaster from "./components/Toaster.jsx";
+import showToaster from "./utils/showToaster.js";
 
 function AppBody() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const categories = useSelector((store) => store.appSlice.categories);
   const [token, setToken] = useState(localStorage.getItem("accessToken"));
+  const [toaster, setToaster] = useState({
+    showToaster: false,
+    toasterMessage: "",
+    toasterTailwindTextColorClass: "",
+  });
 
   useEffect(() => {
-    async function fetchUserData() {
-      const res = await fetch(`/api/v1/users/user/${userId}`, {
+    setToaster({
+      showToaster: true,
+      toasterMessage: "Initial load might take some time! Hold Tight.",
+      toasterTailwindTextColorClass: "text-white",
+    });
+
+    setTimeout(() => {
+      setToaster({
+        showToaster: false,
+        toasterMessage: "",
+        toasterTailwindTextColorClass: "",
+      });
+    }, 4000);
+  }, []);
+
+  useEffect(() => {
+    async function fetchData(url, fetchWhichData) {
+      const res = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -23,22 +46,34 @@ function AppBody() {
         },
       });
 
-      const user = await res.json();
+      const data = await res.json();
 
-      if (user?.status === "success") {
-        dispatch(
-          updateUserData({
-            ...user.data,
-            isLoggedIn: true,
-          })
-        );
-      } else if (user.errorCode === "INVALID_TOKEN") {
+      if (data?.status === "success") {
+        if (fetchWhichData === "user") {
+          dispatch(
+            updateUserData({
+              ...data.data,
+              isLoggedIn: true,
+            })
+          );
+        } else if (fetchWhichData === "channel") {
+          dispatch(
+            updateUserData({
+              createdChannel: true,
+              channel: {
+                channelId: data.data._id,
+              },
+            })
+          );
+        }
+      } else if (data.errorCode === "INVALID_TOKEN") {
         navigate("/login");
-      } else if (user.errorCode === "TOKEN_EXPIRED") {
+      } else if (data.errorCode === "TOKEN_EXPIRED") {
         const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
         const resJson = await res.json();
 
         if (resJson?.status === "success") {
+          localStorage.setItem("accessToken", resJson.data.accessToken);
           setToken(resJson.data.accessToken);
         } else if (
           [
@@ -55,9 +90,11 @@ function AppBody() {
 
     // fetch user data
     const userId = localStorage.getItem("userId");
+    const channelId = localStorage.getItem("channelId");
 
     if (userId) {
-      fetchUserData();
+      fetchData(`/api/v1/users/user/${userId}`, "user");
+      fetchData(`/api/v1/channels/channel/${channelId}`, "channel");
     }
   }, [token]);
 
@@ -83,6 +120,12 @@ function AppBody() {
           <Sidebar />
           <Outlet />
         </section>
+        {toaster.showToaster && (
+          <Toaster
+            text={toaster.toasterMessage}
+            tailwindTextColorClass={toaster.toasterTailwindTextColorClass}
+          />
+        )}
       </section>
     </section>
   );

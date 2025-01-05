@@ -8,6 +8,7 @@ import { deleteMultipleMedia, getOptimizedUrl, uploadToCloudinary } from "../uti
 import { doEmptyFieldExist, isValidMongoDBObjectId } from "../utils/validations.js";
 import fs from "fs";
 import Comment from "../models/comment.model.js";
+import mongoose from "mongoose";
 
 export async function getChannelById(req, res, next) {
     try {
@@ -24,12 +25,12 @@ export async function getChannelById(req, res, next) {
         const channel = await Channel.findById(id);
 
         if (!channel) {
-            return res.status(404).json({ error: null, message: "Channel not found !" });
+            return res.status(404).json({ error: null, errorCode: "CHANNEL_NOT_FOUND", message: "Channel not found !" });
         }
 
         res.status(200)
             .send({
-                status: "Success",
+                status: "success",
                 message: "Channel fetched successfully",
                 data: channel
             });
@@ -40,6 +41,7 @@ export async function getChannelById(req, res, next) {
             .status(500)
             .json({
                 error: null,
+                errorCode: "GET_CHANNEL_ERROR",
                 message: "Get Channel by Id:: Internal Server Error"
             });
     }
@@ -47,29 +49,14 @@ export async function getChannelById(req, res, next) {
 
 export async function createChannel(req, res, next) {
     try {
-        const { userId, handle: channelHandle, title, description } = req.body;
+        const { userId, handle: channelHandle, channelName: title, description } = req.body;
 
         if (doEmptyFieldExist(userId, channelHandle, title, description)) {
-            return res.status(400).json({ error: null, message: "Required fields are missing !" });
+            return res.status(400).json({ error: null, errorCode: "FIELDS_MISSING", message: "Required fields are missing !" });
         }
 
         if (!isValidMongoDBObjectId(userId)) {
             return res.status(400).json({ error: null, message: "User Id is not a valid Id !" });
-        }
-
-        const handle = channelHandle.toLowerCase();
-
-        const [user, existingChannel] = await Promise.all([
-            User.findById(userId).select("_id"),
-            Channel.findOne({ handle }).select("_id")
-        ]);
-
-        if (!user) {
-            return res.status(404).json({ error: null, message: "User not found ! Register to create channel !" });
-        }
-
-        if (existingChannel) {
-            return res.status(400).json({ error: null, message: "Channel with this handle already exists !" });
         }
 
         // Handle images
@@ -86,15 +73,30 @@ export async function createChannel(req, res, next) {
         const images = req.files;   // req.files is an object
 
         if (!images || Object.keys(images).length < 2) {
-            return res.status(400).json({ error: null, message: "Images are required !" });
+            return res.status(400).json({ error: null, errorCode: "IMAGES_NOT_UPLOADED", message: "Images are required !" });
         }
 
         if (Object.keys(images).some((imageKey) => !(images[imageKey][0].mimetype.startsWith("image")))) {
-            return res.status(400).json({ error: null, message: "Only images are allowed !" });
+            return res.status(400).json({ error: null, errorCode: "NOT_IMAGE_ERROR", message: "Only images are allowed !" });
         }
 
         if (Object.keys(images).some((imageKey) => !(images[imageKey][0].size <= 2 * 1024 * 1024))) {
-            return res.status(400).json({ error: null, message: "Images upto 2mb size are only allowed !" });
+            return res.status(400).json({ error: null, errorCode: "IMAGE_SIZE_EXCEEDED", message: "Images upto 2mb size are only allowed !" });
+        }
+
+        const handle = channelHandle.toLowerCase();
+
+        const [user, existingChannel] = await Promise.all([
+            User.findById(userId).select("_id"),
+            Channel.findOne({ handle }).select("_id")
+        ]);
+
+        if (!user) {
+            return res.status(404).json({ error: null, errorCode: "USER_NOT_REGISTERED", message: "User not found ! Register to create channel !" });
+        }
+
+        if (existingChannel) {
+            return res.status(400).json({ error: null, errorCode: "CHANNEL_HANDLE_ALREADY_EXISTS", message: "Channel with this handle already exists !" });
         }
 
         const coverImagePath = images['coverImage'][0].path
@@ -116,7 +118,7 @@ export async function createChannel(req, res, next) {
 
         } catch (error) {
             console.log("Cloudinary Channel Images Upload Error: ", error.message || error);
-            return res.status(500).json({ error: error.message || error, message: "Cloudinary Channel Images Upload Error:: Internal Server Error !" });
+            return res.status(500).json({ error: error.message || error, errorCode: "CREATE_CHANNEL_ERROR", message: "Cloudinary Channel Images Upload Error:: Internal Server Error !" });
         }
 
         const channel = await Channel.create({
@@ -131,12 +133,12 @@ export async function createChannel(req, res, next) {
         });
 
         if (!channel) {
-            return res.status(400).json({ error: null, message: "An error occurred while creating the channel !" });
+            return res.status(400).json({ error: null, errorCode: "CREATE_CHANNEL_ERROR", message: "An error occurred while creating the channel !" });
         }
 
         res.status(200)
             .send({
-                status: "Success",
+                status: "success",
                 message: "Channel created successfully",
                 data: channel
             });
@@ -146,7 +148,8 @@ export async function createChannel(req, res, next) {
         return res
             .status(500)
             .json({
-                error: null,
+                error: error.message || error,
+                errorCode: "CREATE_CHANNEL_ERROR",
                 message: "Created Channel:: Internal Server Error"
             });
     } finally {
@@ -173,8 +176,8 @@ export async function updateChannelById(req, res, next) {
             return res.status(400).json({ error: null, message: "Required fields are missing !" });
         }
 
-        if ((title && title.trim() === "") || (description && description.trim() === "")) {
-            return res.status(400).json({ error: null, message: "Title and Description cannot be empty !" });
+        if ((title.trim() === "") || (description.trim() === "")) {
+            return res.status(400).json({ error: null, errorCode: "FIELDS_EMPTY", message: "Title and Description cannot be empty !" });
         }
 
         if (!isValidMongoDBObjectId(userId)) {
@@ -195,7 +198,7 @@ export async function updateChannelById(req, res, next) {
         }
 
         if (channel.user.toString() !== userId) {
-            return res.status(403).json({ error: null, message: "Unauthorized access !" });
+            return res.status(403).json({ error: null, errorCode: "UNAUTHORISED_ERROR", message: "Unauthorized access !" });
         }
 
         let coverImage = null;
@@ -209,11 +212,11 @@ export async function updateChannelById(req, res, next) {
             try {
                 // Check images type and size
                 if (Object.keys(req.files).some((image) => !req.files[image][0].mimetype.startsWith("image"))) {
-                    return res.status(400).json({ error: null, message: "Only images are allowed !" });
+                    return res.status(400).json({ error: null, errorCode: "NOT_IMAGE_ERROR", message: "Only images are allowed !" });
                 }
 
                 if (Object.keys(req.files).some((image) => !(req.files[image][0].size <= 2 * 1024 * 1024))) {
-                    return res.status(400).json({ error: null, message: "Images upto 2mb size are only allowed !" });
+                    return res.status(400).json({ error: null, errorCode: "IMAGE_SIZE_EXCEEDED", message: "Images upto 2mb size are only allowed !" });
                 }
 
                 // delete current Images which has to be updated
@@ -241,7 +244,7 @@ export async function updateChannelById(req, res, next) {
                 }
             } catch (error) {
                 console.log("Cloudinary Channel Images Updation Error: ", error.message || error);
-                return res.status(500).json({ error: error.message || error, message: "Cloudinary Channel Images Updation:: Internal Server Error !" });
+                return res.status(500).json({ error: error.message || error, errorCode: "UPDATE_CHANNEL_ERROR", message: "Cloudinary Channel Images Updation:: Internal Server Error !" });
             }
         }
 
@@ -249,8 +252,8 @@ export async function updateChannelById(req, res, next) {
         console.log(avatarUrl)
 
         // Update fields explicitly
-        if (title !== undefined) channel.title = title;
-        if (description !== undefined) channel.description = description;
+        if (title) channel.title = title;
+        if (description) channel.description = description;
 
         if (coverImage) {
             channel.coverImage = coverImageUrl;
@@ -266,7 +269,7 @@ export async function updateChannelById(req, res, next) {
 
         res.status(200)
             .send({
-                status: "Success",
+                status: "success",
                 message: "Channel details updated successfully",
                 data: channel
             });
@@ -277,6 +280,7 @@ export async function updateChannelById(req, res, next) {
             .status(500)
             .json({
                 error: null,
+                errorCode: "UPDATE_CHANNEL_ERROR",
                 message: "Update Channel:: Internal Server Error"
             });
     } finally {
@@ -297,10 +301,13 @@ export async function updateChannelById(req, res, next) {
 export async function uploadVideo(req, res, next) {
     try {
         // For now we are just accepting one category from frontend. In future we will add multiple categories
-        const { channelId, userId, title, description, categories, tags } = req.body;
+        const { channelId, userId, title, description, categories: categoriesAsString } = req.body;
+        const categories = JSON.parse(categoriesAsString);
+
+        const tags = ["video", "popular", "trending"];
 
         if (doEmptyFieldExist(channelId, userId, title, description)) {
-            return res.status(400).json({ error: null, message: "Required fields are missing !" });
+            return res.status(400).json({ error: null, errorCode: "FIELDS_MISSING", message: "Required fields are missing !" });
         }
 
         if (!isValidMongoDBObjectId(channelId) || !isValidMongoDBObjectId(userId)) {
@@ -308,7 +315,7 @@ export async function uploadVideo(req, res, next) {
         }
 
         if (!categories || categories.length === 0) {
-            return res.status(400).json({ error: null, message: "Atleast one category should be added !" });
+            return res.status(400).json({ error: null, errorCode: "CATEGORY_NOT_SELECTED", message: "No category was selected !" });
         }
 
         if (!tags || tags.length === 0) {
@@ -328,7 +335,7 @@ export async function uploadVideo(req, res, next) {
         }
 
         if (existingChannel.user.toString() !== userId) {
-            return res.status(403).json({ error: null, message: "Unauthorized access !" });
+            return res.status(403).json({ error: null, errorCode: "UNAUTHORISED_ERROR", message: "Unauthorized access !" });
         }
 
         // Handling Images
@@ -338,23 +345,23 @@ export async function uploadVideo(req, res, next) {
 
 
         if (!media || Object.keys(media).length < 2) {
-            return res.status(400).json({ error: null, message: "All media files are required !" });
+            return res.status(400).json({ error: null, errorCode: "MEDIA_FILES_NOT_UPLOADED", message: "All media files are required !" });
         }
 
         if (!media['thumbnail'][0].mimetype.startsWith("image")) {
-            return res.status(400).json({ error: null, message: "First file should be an image !" });
+            return res.status(400).json({ error: null, errorCode: "FIRST_FILE_IMAGE_ONLY", message: "First file should be an image !" });
         }
 
         if (!(media['thumbnail'][0].size <= 2 * 1024 * 1024)) {
-            return res.status(400).json({ error: null, message: "Image size exceeded ! Only 2mb files are allowed. !" });
+            return res.status(400).json({ error: null, errorCode: "IMAGE_SIZE_EXCEEDED", message: "Image size exceeded ! Only 2mb files are allowed. !" });
         }
 
         if (!media['video'][0].mimetype.startsWith("video")) {
-            return res.status(400).json({ error: null, message: "Second file should be a video !" });
+            return res.status(400).json({ error: null, errorCode: "SECOND_FILE_VIDEO_ONLY", message: "Second file should be a video !" });
         }
 
-        if (!(media['video'][0].size <= 100 * 1024 * 1024)) {
-            return res.status(400).json({ error: null, message: "Video size exceeded ! Only 100mb files are allowed." });
+        if (!(media['video'][0].size <= 50 * 1024 * 1024)) {
+            return res.status(400).json({ error: null, errorCode: "VIDEO_SIZE_EXCEEDED", message: "Video size exceeded ! Only 100mb files are allowed." });
         }
 
         const videoPath = media['video'][0].path;
@@ -377,7 +384,7 @@ export async function uploadVideo(req, res, next) {
             console.log(optimisedVideoUrl, optimisedThumbnailUrl);
         } catch (error) {
             console.log("Cloudinary Video & thumbnail upload error: ", error.message || error);
-            return res.status(400).json({ error: error.message || error, message: "Cloudinary Video & thumbnail upload:: Internal Server Error" });
+            return res.status(400).json({ error: error.message || error, errorCode: "VIDEO_UPLOAD_ERROR", message: "Cloudinary Video & thumbnail upload:: Internal Server Error" });
         }
 
         const newVideo = await Video.create({
@@ -386,21 +393,21 @@ export async function uploadVideo(req, res, next) {
             description,
             videoUrl: optimisedVideoUrl,
             videoPublicId: video.public_id,
+            categories: categories.map(categoryId => new mongoose.Types.ObjectId(categoryId)),
             duration: video.duration,  // in seconds
-            categories,
             tags,
             thumbnail: optimisedThumbnailUrl,
             thumbnailPublicId: thumbnail.public_id
         });
 
         if (!newVideo) {
-            return res.status(400).json({ error: null, message: "An error occurred while uploading the video !" });
+            return res.status(400).json({ error: null, errorCode: "VIDEO_UPLOAD_ERROR", message: "An error occurred while uploading the video !" });
         }
 
         res
             .status(201)
             .send({
-                status: "Success",
+                status: "success",
                 message: "Video uploaded successfully",
                 data: newVideo
             });
@@ -411,6 +418,7 @@ export async function uploadVideo(req, res, next) {
             .status(500)
             .json({
                 error: error.message || error,
+                errorCode: "VIDEO_UPLOAD_ERROR",
                 message: "Upload Video:: Internal Server Error"
             });
     } finally {
@@ -430,18 +438,19 @@ export async function uploadVideo(req, res, next) {
 
 export async function updateVideoById(req, res, next) {
     try {
-        const { videoId, userId, title, description } = req.body;
+        const { id: videoId } = req.params;
+        const { userId, title, description } = req.body;
 
         if (doEmptyFieldExist(videoId, userId)) {
             return res.status(400).json({ error: null, message: "VideoId and UserId are required !" });
         }
 
-        if (title && title.trim() === "") {
-            return res.status(400).json({ error: null, message: "Title cannot be empty !" });
+        if (title.trim() === "") {
+            return res.status(400).json({ error: null, errorCode: "FIELDS_EMPTY", message: "Title cannot be empty !" });
         }
 
-        if (description && description.trim() === "") {
-            return res.status(400).json({ error: null, message: "Description cannot be empty !" });
+        if (description.trim() === "") {
+            return res.status(400).json({ error: null, errorCode: "FIELDS_EMPTY", message: "Description cannot be empty !" });
         }
 
         if (!isValidMongoDBObjectId(videoId) || !isValidMongoDBObjectId(userId)) {
@@ -458,7 +467,7 @@ export async function updateVideoById(req, res, next) {
         const existingChannel = await Channel.findById(existingVideo.channel);
 
         if (existingChannel.user.toString() !== userId) {
-            return res.status(403).json({ error: null, message: "Unauthorized access !" });
+            return res.status(403).json({ error: null, errorCode: "UNAUTHORISED_ERROR", message: "Unauthorized access !" });
         }
 
         // Handling Images
@@ -468,11 +477,11 @@ export async function updateVideoById(req, res, next) {
 
         if (media) {
             if (!media.mimetype.startsWith("image")) {
-                return res.status(400).json({ error: null, message: "First file should be an image !" });
+                return res.status(400).json({ error: null, errorCode: "NOT_IMAGE_ERROR", message: "First file should be an image !" });
             }
 
             if (!(media.size <= 2 * 1024 * 1024)) {
-                return res.status(400).json({ error: null, message: "Image size exceeded ! Only 2mb files are allowed. !" });
+                return res.status(400).json({ error: null, errorCode: "IMAGE_SIZE_EXCEEDED", message: "Image size exceeded ! Only 2mb files are allowed. !" });
             }
 
             const thumbnailPath = media.path;
@@ -500,13 +509,13 @@ export async function updateVideoById(req, res, next) {
         );
 
         if (!updatedVideo) {
-            return res.status(400).json({ error: null, message: "An error occurred while updating the video !" });
+            return res.status(400).json({ error: null, errorCode: "UPDATE_VIDEO_ERROR", message: "An error occurred while updating the video !" });
         }
 
         res
             .status(200)
             .send({
-                status: "Success",
+                status: "success",
                 message: "Video Updated successfully",
                 data: updatedVideo
             });
@@ -517,6 +526,7 @@ export async function updateVideoById(req, res, next) {
             .status(500)
             .json({
                 error: error.message || error,
+                errorCode: "UPDATE_VIDEO_ERROR",
                 message: "Update Video:: Internal Server Error"
             });
     } finally {
@@ -533,7 +543,6 @@ export async function deleteVideoById(req, res, next) {
     try {
         const { id } = req.params;
         const { userId } = req.body;
-
 
         if (doEmptyFieldExist(id, userId)) {
             return res.status(400).json({ error: null, message: "VideoId and UserId are required !" });
@@ -601,7 +610,7 @@ export async function deleteVideoById(req, res, next) {
         res
             .status(200)
             .send({
-                status: "Success",
+                status: "success",
                 message: "Video Deleted successfully",
                 data: { videoId: id, videoDeleteCount: deleteCount, deleteCommentsCount, deleteLikesCount, deleteViewsCount }
             });

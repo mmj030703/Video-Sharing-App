@@ -22,7 +22,7 @@ export async function uploadToCloudinary(fileLocalPath) {
             use_filename: true,             // Use the original file name
             unique_filename: false,         // Prevent random renaming
             video_codec: 'auto',       // Let Cloudinary automatically choose the best video codec
-            max_file_size: 100000000
+            max_file_size: 50000000
         });
 
         console.log("Upload Result:", uploadResult);

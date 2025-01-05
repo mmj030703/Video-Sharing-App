@@ -6,7 +6,7 @@ import authenticateUser from "../middlewares/authenticate.middleware.js"
 const channelRouter = express.Router();
 
 // Routes
-channelRouter.get("/:id", getChannelById);
+channelRouter.get("/channel/:id", getChannelById);
 channelRouter.post(
     "/create",
     authenticateUser,
@@ -22,10 +22,11 @@ channelRouter.patch("/update/:id", authenticateUser, dynamicUpload.fields([
 ]), updateChannelById);
 
 // Channel -> Video Related Routes
-channelRouter.post("/videos/upload", authenticateUser, dynamicUpload.fields([
+channelRouter.post("/videos/upload", dynamicUpload.fields([
     { name: "video", maxCount: 1 },
     { name: "thumbnail", maxCount: 1 }
 ]), uploadVideo);
+
 channelRouter.patch("/videos/update/:id", authenticateUser, dynamicUpload.single('thumbnail'), updateVideoById);
 channelRouter.delete("/videos/delete/:id", authenticateUser, deleteVideoById);
 

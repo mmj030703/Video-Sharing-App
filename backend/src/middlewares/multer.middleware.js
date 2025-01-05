@@ -1,4 +1,3 @@
-import { log } from "console";
 import multer from "multer";
 
 const storage = multer.diskStorage({

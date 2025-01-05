@@ -1,30 +1,133 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { closeSidebar } from "../utils/slices/sidebarSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faThumbsUp, faThumbsDown } from "@fortawesome/free-regular-svg-icons";
-import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
+import {
+  faThumbsUp as faThumbsUpRegular,
+  faThumbsDown as faThumbsDownRegular,
+} from "@fortawesome/free-regular-svg-icons";
+import {
+  faEllipsisVertical,
+  faThumbsUp as faThumbsUpSolid,
+  faThumbsDown as faThumbsDownSolid,
+} from "@fortawesome/free-solid-svg-icons";
+import Toaster from "../components/Toaster";
+import errorHandler from "../utils/errorHandler";
+import showToaster from "../utils/showToaster";
+import UpdateCommentForm from "../components/UpdateCommentForm";
 
 function VideoPlayerPage() {
+  const [commentLoaderLoading, setCommentLoaderLoading] = useState(false);
+  const [commentInput, setCommentInput] = useState("");
   const [video, setVideo] = useState(null);
   const [comments, setComments] = useState([]);
   const [recommendedVideos, setRecommendedVideos] = useState([]);
-  const sidebarOpened = useSelector(
-    (store) => store.sidebarSlice.sidebarOpened
-  );
   const user = useSelector((store) => store.userSlice.user);
   const dispatch = useDispatch();
   const { id } = useParams("id");
-  const [openCommentEditList, setOpenCommentEditList] = useState(false);
+  const [openCommentEditListId, setOpenCommentEditListId] = useState("");
+  const [toaster, setToaster] = useState({
+    showToaster: false,
+    toasterMessage: "",
+    toasterTailwindTextColorClass: "",
+  });
+  const navigate = useNavigate();
+  const [showUpdateCommentForm, setShowUpdateCommentForm] = useState(false);
+  const [likeDislikeOperation, setLikeDislikeOperation] = useState({
+    liked: false,
+    disliked: false,
+  });
+
+  const months = {
+    0: "Jan",
+    1: "Feb",
+    2: "Mar",
+    3: "Apr",
+    4: "May",
+    5: "Jun",
+    6: "Jul",
+    7: "Aug",
+    8: "Sep",
+    9: "Oct",
+    10: "Nov",
+    11: "Dec",
+  };
 
   useEffect(() => {
     dispatch(closeSidebar());
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [id]);
+
+  useEffect(() => {
+    fetchLikeDislikeUserStatus();
+  }, [id]);
+
+  async function fetchLikeDislikeUserStatus() {
+    // console.log("id:", id);
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("accessToken");
+
+    const likeDislikeUserStatusRes = await fetch(
+      `/api/v1/likes-dislikes/user-status/${id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId,
+        }),
+      }
+    );
+
+    const likeDislikeUserStatus = await likeDislikeUserStatusRes.json();
+    // console.log(likeDislikeUserStatus);
+
+    // Logged In User like-dislike status
+    if (likeDislikeUserStatus.status === "success") {
+      if (likeDislikeUserStatus.data.userLikedDisliked === true) {
+        // console.log("user has either liked or disliked");
+        setLikeDislikeOperation({
+          liked: likeDislikeUserStatus.data.type === true ? true : false,
+          disliked: likeDislikeUserStatus.data.type === false ? true : false,
+        });
+      } else
+        setLikeDislikeOperation({
+          liked: false,
+          disliked: false,
+        });
+    } else if (likeDislikeUserStatus.errorCode === "INVALID_TOKEN") {
+      navigate("/login");
+    } else if (likeDislikeUserStatus.errorCode === "TOKEN_EXPIRED") {
+      // console.log("failed");
+
+      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const resJson = await res.json();
+
+      if (resJson?.status === "success") {
+        localStorage.setItem("accessToken", resJson.data.accessToken);
+        await fetchLikeDislikeUserStatus();
+        return;
+      } else if (
+        [
+          "REFRESH_TOKEN_ERROR",
+          "INVALID_TOKEN",
+          "TOKEN_EXPIRED",
+          "INVALID_REFRESH_TOKEN",
+        ].includes(resJson.errorCode)
+      ) {
+        navigate("/login");
+      }
+    } else {
+      errorHandler(likeDislikeUserStatus.errorCode, setToaster);
+    }
+  }
 
   async function fetchData() {
     const [videoRes, commentsRes] = await Promise.all([
@@ -37,22 +140,276 @@ function VideoPlayerPage() {
       commentsRes.json(),
     ]);
 
-    setVideo(video.data);
-    setComments(comments.data.comments);
+    if (video.status === "success") {
+      setVideo(video.data);
+    } else {
+      showToaster(
+        "There was an error while loading data please reload !",
+        "text-red-400",
+        setToaster
+      );
+    }
+
+    if (comments.status === "success") {
+      setComments(comments.data.comments);
+    } else {
+      showToaster("Problem in loading comments !", "text-red-400", setToaster);
+    }
 
     const recommendedVideosRes = await fetch(
       `/api/v1/videos/category/${video.data.video.categories[0]._id}`
     );
     const recommendedVideos = await recommendedVideosRes.json();
 
-    setRecommendedVideos(recommendedVideos.data.videos);
+    if (recommendedVideos.status === "success") {
+      setRecommendedVideos(recommendedVideos.data.videos);
+    } else {
+      showToaster(
+        "Problem in loading recommended videos !",
+        "text-red-400",
+        setToaster
+      );
+    }
+  }
+
+  function handleAddComment() {
+    setCommentLoaderLoading(true);
+
+    const error = validateCommentMessage(commentInput);
+    if (error) return;
+
+    addComment(commentInput);
+  }
+
+  async function addComment(message) {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("accessToken");
+
+    const res = await fetch(`/api/v1/comments/add/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        userId,
+        message,
+      }),
+    });
+
+    const comment = await res.json();
+
+    if (comment?.status === "success") {
+      const commentsRes = await fetch(`/api/v1/comments/all/${id}`);
+      const comments = await commentsRes.json();
+      // console.log(comments);
+
+      setCommentLoaderLoading(false);
+
+      if (comments.status === "success") {
+        // console.log(comments);
+        setCommentInput("");
+        setComments(comments.data.comments);
+        // console.log("comments after fetching : ", comments);
+
+        showToaster(
+          "Comment added succesfully !",
+          "text-green-500",
+          setToaster
+        );
+      } else {
+        showToaster(
+          "Problem in fetching comments ! Please reload for getting comments.",
+          "text-red-400",
+          setToaster
+        );
+      }
+    } else if (comment.errorCode === "INVALID_TOKEN") {
+      navigate("/login");
+    } else if (comment.errorCode === "TOKEN_EXPIRED") {
+      // console.log("failed");
+
+      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const resJson = await res.json();
+
+      if (resJson?.status === "success") {
+        localStorage.setItem("accessToken", resJson.data.accessToken);
+        handleAddComment();
+        return;
+      } else if (
+        [
+          "REFRESH_TOKEN_ERROR",
+          "INVALID_TOKEN",
+          "TOKEN_EXPIRED",
+          "INVALID_REFRESH_TOKEN",
+        ].includes(resJson.errorCode)
+      ) {
+        navigate("/login");
+      }
+    } else {
+      setCommentLoaderLoading(false);
+      errorHandler(comment.errorCode, setToaster);
+    }
+
+    // console.log(comment);
+  }
+
+  function validateCommentMessage(message) {
+    if (!message || message.trim() === "") {
+      errorHandler("FIELDS_MISSING", setToaster);
+      return true;
+    }
+
+    return false;
+  }
+
+  async function handleCommentDelete(commentId) {
+    console.log(commentId);
+
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("accessToken");
+
+    const res = await fetch(`/api/v1/comments/delete/${commentId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        userId,
+      }),
+    });
+
+    const deletedComment = await res.json();
+
+    console.log(deletedComment);
+
+    if (deletedComment.status === "success") {
+      const commentsRes = await fetch(`/api/v1/comments/all/${id}`);
+      const comments = await commentsRes.json();
+      console.log(comments);
+
+      if (comments.status === "success") {
+        console.log(comments);
+        setComments(comments.data.comments);
+        setOpenCommentEditListId(null);
+        console.log("comments after fetching : ", comments);
+
+        showToaster(
+          "Comment deleted succesfully !",
+          "text-green-500",
+          setToaster
+        );
+      }
+    } else if (deletedComment.errorCode === "INVALID_TOKEN") {
+      navigate("/login");
+    } else if (deletedComment.errorCode === "TOKEN_EXPIRED") {
+      console.log("failed");
+
+      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const resJson = await res.json();
+
+      if (resJson?.status === "success") {
+        localStorage.setItem("accessToken", resJson.data.accessToken);
+        await handleCommentDelete(commentId);
+        return;
+      } else if (
+        [
+          "REFRESH_TOKEN_ERROR",
+          "INVALID_TOKEN",
+          "TOKEN_EXPIRED",
+          "INVALID_REFRESH_TOKEN",
+        ].includes(resJson.errorCode)
+      ) {
+        navigate("/login");
+      }
+    } else {
+      setCommentLoaderLoading(false);
+      errorHandler(deletedComment.errorCode, setToaster);
+    }
+  }
+
+  async function handleLikeDislikeOperation(type) {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("accessToken");
+
+    const res = await fetch(
+      `/api/v1/likes-dislikes/update-likes-dislikes/${id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId,
+          type: type === "like" ? true : false,
+          operation:
+            (type === "like" && !likeDislikeOperation.liked) ||
+            (type === "dislike" && !likeDislikeOperation.disliked)
+              ? "add"
+              : "remove",
+          alreadyLiked: likeDislikeOperation.liked,
+          alreadyDisliked: likeDislikeOperation.disliked,
+        }),
+      }
+    );
+
+    const resJson = await res.json();
+
+    if (resJson.status === "success") {
+      console.log("success");
+
+      setLikeDislikeOperation((prevState) => {
+        console.log("prev", prevState);
+        let liked = prevState.liked;
+        let disliked = prevState.disliked;
+
+        const newState = {
+          liked: false,
+          disliked: false,
+        };
+
+        if (type === "like" && !liked) {
+          newState.liked = !liked ? true : false;
+          newState.disliked = false;
+        } else if (type === "dislike" && !disliked) {
+          newState.disliked = !disliked ? true : false;
+          newState.liked = false;
+        }
+
+        console.log(newState);
+        return newState;
+      });
+    } else if (resJson.errorCode === "INVALID_TOKEN") {
+      navigate("/login");
+    } else if (resJson.errorCode === "TOKEN_EXPIRED") {
+      console.log("failed");
+
+      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const resJson = await res.json();
+
+      if (resJson?.status === "success") {
+        localStorage.setItem("accessToken", resJson.data.accessToken);
+        await handleLikeDislikeOperation(type);
+        return;
+      } else if (
+        [
+          "REFRESH_TOKEN_ERROR",
+          "INVALID_TOKEN",
+          "TOKEN_EXPIRED",
+          "INVALID_REFRESH_TOKEN",
+        ].includes(resJson.errorCode)
+      ) {
+        navigate("/login");
+      }
+    } else {
+      errorHandler(resJson.errorCode, setToaster);
+    }
   }
 
   return (
-    <section
-      className={`${
-        sidebarOpened ? "ml-[270px]" : "ml-0"
-      } overflow-hidden w-full py-3`}>
+    <section className={`overflow-hidden w-full py-3`}>
       <section className="">
         {/* Video Player */}
         {video && (
@@ -67,11 +424,11 @@ function VideoPlayerPage() {
                   controls
                   autoPlay
                 />
-                <section className="text-white mt-4 space-y-3">
+                <section className="text-white mt-4">
                   <h1 className="text-2xl font-semibold">
                     {video.video.title}
                   </h1>
-                  <article className="flex items-center justify-between gap-x-3">
+                  <article className="mt-3 flex items-center justify-between gap-x-3">
                     <section className="flex items-center gap-x-3">
                       <img
                         src={video.video.channel.avatar}
@@ -81,27 +438,65 @@ function VideoPlayerPage() {
                         <p className="font-semibold">
                           {video.video.channel.title}
                         </p>
-                        <p className="text-slate-300">
-                          {Math.floor(Math.random() * 100)}k subscribers
-                        </p>
+                        <p className="text-slate-300">85k subscribers</p>
                       </article>
-                      <button className="ml-3 font-semibold text-[1.2rem] text-white py-[7px] px-5 cursor-pointer bg-slate-600 rounded-sm">
+                      <button
+                        onClick={(e) => {
+                          e.target.textContent =
+                            e.target.textContent === "Subscribe"
+                              ? "Subscribed"
+                              : "Subscribe";
+                        }}
+                        className="hover:bg-slate-500 ml-3 font-semibold text-[1.2rem] text-white py-[7px] px-5 cursor-pointer bg-slate-600 rounded-sm">
                         Subscribe
                       </button>
                     </section>
                     <article className="mr-5 bg-slate-500 rounded-md py-1">
-                      <button>
-                        <FontAwesomeIcon
-                          icon={faThumbsUp}
-                          className="text-3xl border-e-2 py-1 px-6"
-                        />
+                      <button
+                        onClick={() => handleLikeDislikeOperation("like")}>
+                        {!likeDislikeOperation.liked && (
+                          <FontAwesomeIcon
+                            icon={faThumbsUpRegular}
+                            className="text-3xl border-e-2 py-1 px-6"
+                          />
+                        )}
+                        {likeDislikeOperation.liked && (
+                          <FontAwesomeIcon
+                            icon={faThumbsUpSolid}
+                            className="text-3xl border-e-2 py-1 px-6"
+                          />
+                        )}
                       </button>
-                      <button>
-                        <FontAwesomeIcon
-                          icon={faThumbsDown}
-                          className="text-3xl py-1 px-6"
-                        />
+                      <button
+                        onClick={() => handleLikeDislikeOperation("dislike")}>
+                        {!likeDislikeOperation.disliked && (
+                          <FontAwesomeIcon
+                            icon={faThumbsDownRegular}
+                            className="text-3xl py-1 px-6"
+                          />
+                        )}
+                        {likeDislikeOperation.disliked && (
+                          <FontAwesomeIcon
+                            icon={faThumbsDownSolid}
+                            className="text-3xl py-1 px-6"
+                          />
+                        )}
                       </button>
+                    </article>
+                  </article>
+                  <article className="max-w-[870px] mt-7 bg-slate-600 p-3 rounded-md">
+                    <article className="flex gap-x-3 font-semibold">
+                      <p>{video.viewsCount} views</p>
+                      <p>
+                        {new Date(video.video.createdAt).getDate()}{" "}
+                        {months[new Date(video.video.createdAt).getMonth()]},{" "}
+                        {new Date(video.video.createdAt).getFullYear()}
+                      </p>
+                    </article>
+                    <article className="mt-2">
+                      <p className="whitespace-pre-wrap">
+                        {video.video.description}
+                      </p>
                     </article>
                   </article>
                 </section>
@@ -114,12 +509,20 @@ function VideoPlayerPage() {
                   {/* Add new comment */}
                   <article className="flex flex-col mt-4">
                     <input
+                      value={commentInput}
+                      onChange={(e) => setCommentInput(e.target.value)}
                       type="text"
                       placeholder="Add Comment"
+                      autoComplete="off"
                       className="w-full rounded-md px-2 placeholder-white placeholder:font-semibold bg-slate-500 text-white text-lg outline-none py-2"
                     />
-                    <button className="mt-4 font-semibold text-[1rem] text-white py-[5px] px-2 cursor-pointer bg-slate-600 rounded-sm">
+                    <button
+                      onClick={handleAddComment}
+                      className="flex items-center justify-center mt-4 hover:bg-slate-500 font-semibold text-[1rem] text-white py-[5px] px-2 cursor-pointer bg-slate-600 rounded-sm">
                       Add Comment
+                      {commentLoaderLoading && (
+                        <span className="ml-3 animate-spin inline-block w-5 h-5 border-4 border-white border-t-slate-600 rounded-full"></span>
+                      )}
                     </button>
                   </article>
 
@@ -127,21 +530,7 @@ function VideoPlayerPage() {
                   <section className="mt-10 space-y-5">
                     {comments.length ? (
                       comments.map((comment) => {
-                        const date = new Date(comment.createdAt);
-                        const months = {
-                          0: "Jan",
-                          1: "Feb",
-                          2: "Mar",
-                          3: "Apr",
-                          4: "May",
-                          5: "Jun",
-                          6: "Jul",
-                          7: "Aug",
-                          8: "Sep",
-                          9: "Oct",
-                          10: "Nov",
-                          11: "Dec",
-                        };
+                        const date = new Date(comment.updatedAt);
 
                         return (
                           <article
@@ -168,24 +557,36 @@ function VideoPlayerPage() {
                               {user.userId === comment.user._id && (
                                 <section>
                                   <button
-                                    onClick={() =>
-                                      setOpenCommentEditList(
-                                        (prevState) => !prevState
-                                      )
-                                    }
+                                    onClick={() => {
+                                      setOpenCommentEditListId((prevState) => {
+                                        return prevState === comment._id
+                                          ? null
+                                          : comment._id;
+                                      });
+                                    }}
                                     className="absolute top-2 right-2">
                                     <FontAwesomeIcon
                                       icon={faEllipsisVertical}
                                     />
                                   </button>
                                   <ul
-                                    className={`absolute top-10 right-2 ${
-                                      !openCommentEditList ? "hidden" : ""
-                                    } bg-slate-600 top-16 rounded-md`}>
-                                    <li className="hover:bg-slate-500 cursor-pointer rounded-t-md px-5 py-2 font-semibold text-white text-[1rem]">
+                                    className={`z-50 absolute top-5 right-6 ${
+                                      openCommentEditListId !== comment._id
+                                        ? "hidden"
+                                        : ""
+                                    } bg-slate-600 top-0 rounded-md`}>
+                                    <li
+                                      onClick={() =>
+                                        setShowUpdateCommentForm(true)
+                                      }
+                                      className="hover:bg-slate-500 cursor-pointer rounded-t-md px-4 py-2 font-semibold text-white text-[.9rem]">
                                       Update
                                     </li>
-                                    <li className="hover:bg-slate-500 cursor-pointer border-t-2 rounded-b-md px-5 py-2 font-semibold text-white text-[1rem]">
+                                    <li
+                                      onClick={() => {
+                                        handleCommentDelete(comment._id);
+                                      }}
+                                      className="hover:bg-slate-500 cursor-pointer border-t-2 rounded-b-md px-4 py-[6px] bg-red-700 font-semibold text-white text-[.9rem]">
                                       Delete
                                     </li>
                                   </ul>
@@ -197,8 +598,20 @@ function VideoPlayerPage() {
                       })
                     ) : (
                       <h1 className="text-center text-5xl mt-10 text-slate-600 font-bold">
-                        No video found !
+                        Make first comment on this video !
                       </h1>
+                    )}
+
+                    {showUpdateCommentForm && (
+                      <UpdateCommentForm
+                        setToaster={setToaster}
+                        setShowUpdateCommentForm={setShowUpdateCommentForm}
+                        setOpenCommentEditListId={setOpenCommentEditListId}
+                        comment={comments.find(
+                          (comment) => comment._id === openCommentEditListId
+                        )}
+                        setComments={setComments}
+                      />
                     )}
                   </section>
                 </section>
@@ -267,6 +680,12 @@ function VideoPlayerPage() {
           </section>
         )}
       </section>
+      {toaster.showToaster && (
+        <Toaster
+          text={toaster.toasterMessage}
+          tailwindTextColorClass={toaster.toasterTailwindTextColorClass}
+        />
+      )}
     </section>
   );
 }

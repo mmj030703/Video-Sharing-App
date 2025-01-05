@@ -55,7 +55,7 @@ function SearchPage() {
                   <figure>
                     <img
                       src={video.thumbnail}
-                      className="w-[300px] rounded-md"
+                      className="w-[260px] h-full object-cover rounded-s-md"
                     />
                   </figure>
                   <article className="text-white font-semibold py-1">
@@ -76,8 +76,12 @@ function SearchPage() {
                         months[date.getMonth()]
                       }, ${date.getFullYear()}`}
                     </p>
-                    <p className="text-[15px] text-slate-300 mt-2">
-                      {video.description}
+                    <p
+                      title="description"
+                      className="text-[15px] text-slate-300 mt-2">
+                      {video.description.length > 80
+                        ? video.description.slice(0, 80) + "..."
+                        : video.description}
                     </p>
                   </article>
                 </article>

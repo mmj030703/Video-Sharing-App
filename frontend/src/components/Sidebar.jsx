@@ -8,6 +8,8 @@ function Sidebar() {
   const sidebarOpened = useSelector(
     (store) => store.sidebarSlice.sidebarOpened
   );
+  const user = useSelector((store) => store.userSlice.user);
+
   const dispatch = useDispatch();
 
   async function fetchHomepageVideos(category) {
@@ -21,7 +23,7 @@ function Sidebar() {
     <section
       className={`${
         !sidebarOpened && "hidden"
-      } fixed top-[68px] bg-slate-700 min-w-64 py-2 px-2 pe-2 rounded-sm h-screen overflow-y-scroll scrollbar scrollbar-track-slate-600 scrollbar-thumb-slate-400`}>
+      } z-30 fixed top-[68px] bg-slate-700 min-w-64 py-2 px-2 pe-2 rounded-sm h-screen overflow-y-scroll scrollbar scrollbar-track-slate-600 scrollbar-thumb-slate-400`}>
       {/* My Section */}
       <section className="flex flex-col gap-y-3 pb-2 w-full hover:">
         <button className="font-semibold text-[1.1rem] text-white cursor-pointer bg-slate-600 rounded-sm">
@@ -29,11 +31,15 @@ function Sidebar() {
             Home
           </Link>
         </button>
-        <button className="font-semibold text-[1.1rem] text-white cursor-pointer bg-slate-600 rounded-sm">
-          <Link to={"/"} className="block py-[8px] px-4">
-            Your Channel
-          </Link>
-        </button>
+        {user?.createdChannel && (
+          <button className="font-semibold text-[1.1rem] text-white cursor-pointer bg-slate-600 rounded-sm">
+            <Link
+              to={`/channels/${user?.channel?.channelId}`}
+              className="block py-[8px] px-4">
+              Your Channel
+            </Link>
+          </button>
+        )}
       </section>
 
       {/* Categories Section */}

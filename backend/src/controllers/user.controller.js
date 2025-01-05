@@ -1,4 +1,5 @@
 import { ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION } from "../constants/constant.js";
+import Channel from "../models/channel.model.js";
 import User from "../models/user.model.js";
 import { getOptimizedUrl, uploadToCloudinary } from "../utils/cloudinary.js";
 import { doEmptyFieldExist, isEmailValid, isValidMongoDBObjectId } from "../utils/validations.js";
@@ -127,11 +128,14 @@ export async function loginUser(req, res, next) {
             return res.status(400).json({ errorCode: "INVALID_PASSWORD", message: "Password is invalid !" });
         }
 
+        const channel = await Channel.findOne({ user: existingUser._id });
+
         const userData = {
             userId: existingUser._id,
             username: existingUser.username,
             email: existingUser.email,
-            avatar: existingUser.avatar
+            avatar: existingUser.avatar,
+            channel: { channelId: channel._id }
         }
 
         // jwt token generate
