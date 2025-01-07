@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://video-sharing-app-2n9p.onrender.com', //https://video-sharing-app-2n9p.onrender.com
+        target: 'https://video-sharing-app-2n9p.onrender.com',
         changeOrigin: true,
         configure: (proxyServer) => {
           proxyServer.on('proxyReq', (proxyReq, req, res) => {

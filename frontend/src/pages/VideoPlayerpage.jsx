@@ -17,6 +17,7 @@ import Toaster from "../components/Toaster";
 import errorHandler from "../utils/errorHandler";
 import showToaster from "../utils/showToaster";
 import UpdateCommentForm from "../components/UpdateCommentForm";
+import { updateUserData } from "../utils/slices/userSlice";
 
 function VideoPlayerPage() {
   const [commentLoaderLoading, setCommentLoaderLoading] = useState(false);
@@ -72,6 +73,10 @@ function VideoPlayerPage() {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
 
+    if (!token) {
+      return;
+    }
+
     const likeDislikeUserStatusRes = await fetch(
       `/api/v1/likes-dislikes/user-status/${id}`,
       {
@@ -103,6 +108,8 @@ function VideoPlayerPage() {
           disliked: false,
         });
     } else if (likeDislikeUserStatus.errorCode === "INVALID_TOKEN") {
+      showToaster("Please login again !", "text-white", setToaster);
+      logout();
       navigate("/login");
     } else if (likeDislikeUserStatus.errorCode === "TOKEN_EXPIRED") {
       // console.log("failed");
@@ -122,6 +129,8 @@ function VideoPlayerPage() {
           "INVALID_REFRESH_TOKEN",
         ].includes(resJson.errorCode)
       ) {
+        showToaster("Please login again !", "text-white", setToaster);
+        logout();
         navigate("/login");
       }
     } else {
@@ -173,8 +182,6 @@ function VideoPlayerPage() {
   }
 
   function handleAddComment() {
-    setCommentLoaderLoading(true);
-
     const error = validateCommentMessage(commentInput);
     if (error) return;
 
@@ -184,6 +191,17 @@ function VideoPlayerPage() {
   async function addComment(message) {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      showToaster(
+        "Please login to perform this operation !",
+        "text-white",
+        setToaster
+      );
+      return;
+    }
+
+    setCommentLoaderLoading(true);
 
     const res = await fetch(`/api/v1/comments/add/${id}`, {
       method: "POST",
@@ -225,9 +243,11 @@ function VideoPlayerPage() {
         );
       }
     } else if (comment.errorCode === "INVALID_TOKEN") {
+      showToaster("Please login again !", "text-white", setToaster);
+      logout();
       navigate("/login");
     } else if (comment.errorCode === "TOKEN_EXPIRED") {
-      // console.log("failed");
+      console.log("failed");
 
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
@@ -244,6 +264,8 @@ function VideoPlayerPage() {
           "INVALID_REFRESH_TOKEN",
         ].includes(resJson.errorCode)
       ) {
+        showToaster("Please login again !", "text-white", setToaster);
+        logout();
         navigate("/login");
       }
     } else {
@@ -268,6 +290,15 @@ function VideoPlayerPage() {
 
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      showToaster(
+        "Please login to perform this operation !",
+        "text-white",
+        setToaster
+      );
+      return;
+    }
 
     const res = await fetch(`/api/v1/comments/delete/${commentId}`, {
       method: "DELETE",
@@ -302,6 +333,8 @@ function VideoPlayerPage() {
         );
       }
     } else if (deletedComment.errorCode === "INVALID_TOKEN") {
+      showToaster("Please login again !", "text-white", setToaster);
+      logout();
       navigate("/login");
     } else if (deletedComment.errorCode === "TOKEN_EXPIRED") {
       console.log("failed");
@@ -321,6 +354,8 @@ function VideoPlayerPage() {
           "INVALID_REFRESH_TOKEN",
         ].includes(resJson.errorCode)
       ) {
+        showToaster("Please login again !", "text-white", setToaster);
+        logout();
         navigate("/login");
       }
     } else {
@@ -332,6 +367,15 @@ function VideoPlayerPage() {
   async function handleLikeDislikeOperation(type) {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      showToaster(
+        "Login to perform this operation !",
+        "text-white",
+        setToaster
+      );
+      return;
+    }
 
     const res = await fetch(
       `/api/v1/likes-dislikes/update-likes-dislikes/${id}`,
@@ -382,6 +426,8 @@ function VideoPlayerPage() {
         return newState;
       });
     } else if (resJson.errorCode === "INVALID_TOKEN") {
+      showToaster("Please login again !", "text-white", setToaster);
+      logout();
       navigate("/login");
     } else if (resJson.errorCode === "TOKEN_EXPIRED") {
       console.log("failed");
@@ -401,6 +447,8 @@ function VideoPlayerPage() {
           "INVALID_REFRESH_TOKEN",
         ].includes(resJson.errorCode)
       ) {
+        showToaster("Please login again !", "text-white", setToaster);
+        logout();
         navigate("/login");
       }
     } else {
@@ -408,67 +456,91 @@ function VideoPlayerPage() {
     }
   }
 
+  function logout() {
+    dispatch(
+      updateUserData({
+        userId: "",
+        email: "",
+        username: "",
+        avatar: "",
+        isLoggedIn: false,
+        createdChannel: false,
+        channel: {
+          channelId: "",
+        },
+      })
+    );
+
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("channelId");
+  }
+
   return (
-    <section className={`overflow-hidden w-full py-3`}>
-      <section className="">
+    <section
+      className={`overflow-hidden w-full py-3 max-[350px]:mt-24 max-[685px]:mt-14`}>
+      <section>
         {/* Video Player */}
         {video && (
-          <section className="flex gap-x-5">
+          <section className="flex flex-col min-[962px]:flex-row gap-x-5">
             <section className="flex flex-col gap-y-7">
               <section>
                 <video
-                  className="bg-slate-600 rounded-md outline-none"
+                  className="bg-slate-600 max-[961px]:w-full rounded-md outline-none"
                   src={video.video.videoUrl}
                   width="870"
                   height="450"
                   controls
+                  controlsList="nodownload"
                   autoPlay
                 />
                 <section className="text-white mt-4">
                   <h1 className="text-2xl font-semibold">
                     {video.video.title}
                   </h1>
-                  <article className="mt-3 flex items-center justify-between gap-x-3">
-                    <section className="flex items-center gap-x-3">
-                      <img
-                        src={video.video.channel.avatar}
-                        className="rounded-full w-14"
-                      />
-                      <article>
-                        <p className="font-semibold">
-                          {video.video.channel.title}
-                        </p>
-                        <p className="text-slate-300">85k subscribers</p>
+                  <article className="mt-3 flex flex-col min-[600px]:flex-row gap-x-3">
+                    <section className="flex flex-col min-[600px]:flex-row min-[600px]:items-center gap-x-3">
+                      <article className="flex gap-x-3 items-center">
+                        <img
+                          src={video.video.channel.avatar}
+                          className="rounded-full w-14"
+                        />
+                        <article>
+                          <p className="font-semibold">
+                            {video.video.channel.title}
+                          </p>
+                          <p className="text-slate-300">85k subscribers</p>
+                        </article>
                       </article>
-                      <button
+                    </section>
+                    <button
                         onClick={(e) => {
                           e.target.textContent =
                             e.target.textContent === "Subscribe"
                               ? "Subscribed"
                               : "Subscribe";
                         }}
-                        className="hover:bg-slate-500 ml-3 font-semibold text-[1.2rem] text-white py-[7px] px-5 cursor-pointer bg-slate-600 rounded-sm">
+                        className="hover:bg-slate-500 max-[599px]:order-2 max-[599px]:mt-3 max-[599px]:w-full min-[600px]:ml-2 font-semibold text-[1.2rem] text-white py-[7px] px-5 cursor-pointer bg-slate-600 rounded-sm">
                         Subscribe
                       </button>
-                    </section>
-                    <article className="mr-5 bg-slate-500 rounded-md py-1">
+                    <article className="flex justify-center min-[600px]:mt-0 mt-4 min-[600px]:ml-auto max-[599px]:self-start self-center mr-5 bg-slate-500 rounded-md py-1 max-[599px]:w-full">
                       <button
-                        onClick={() => handleLikeDislikeOperation("like")}>
+                        onClick={() => handleLikeDislikeOperation("like")} className="flex justify-center w-full border-e-2">
                         {!likeDislikeOperation.liked && (
                           <FontAwesomeIcon
                             icon={faThumbsUpRegular}
-                            className="text-3xl border-e-2 py-1 px-6"
+                            className="text-3xl py-1 px-6"
                           />
                         )}
                         {likeDislikeOperation.liked && (
                           <FontAwesomeIcon
                             icon={faThumbsUpSolid}
-                            className="text-3xl border-e-2 py-1 px-6"
+                            className="text-3xl py-1 px-6"
                           />
                         )}
                       </button>
                       <button
-                        onClick={() => handleLikeDislikeOperation("dislike")}>
+                        onClick={() => handleLikeDislikeOperation("dislike")} className="flex justify-center w-full">
                         {!likeDislikeOperation.disliked && (
                           <FontAwesomeIcon
                             icon={faThumbsDownRegular}
@@ -501,6 +573,8 @@ function VideoPlayerPage() {
                   </article>
                 </section>
               </section>
+
+              {/* Comments Section */}
               <section className="text-white pb-14">
                 <h2 className="text-2xl font-semibold">
                   {comments?.length} Comments
@@ -617,6 +691,8 @@ function VideoPlayerPage() {
                 </section>
               </section>
             </section>
+
+            {/* Recommended Videos Section */}
             <section>
               {recommendedVideos.length ? (
                 recommendedVideos.map((video) => {
@@ -638,14 +714,14 @@ function VideoPlayerPage() {
 
                   return (
                     <Link to={`/videos/watch/${video._id}`} key={video._id}>
-                      <article className="bg-slate-600 rounded-md flex gap-x-4 mt-3">
+                      <article className="bg-slate-600 rounded-md flex flex-col min-[650px]:flex-row gap-x-4 mt-3">
                         <figure>
                           <img
                             src={video.thumbnail}
-                            className="max-w-[170px] h-full object-cover rounded-s-md"
+                            className="w-full min-[650px]:min-w-[170px] min-[650px]:w-[170px] h-[200px] min-[650px]:h-full object-cover rounded-md min-[650px]:rounded-s-md"
                           />
                         </figure>
-                        <article className="text-white font-semibold py-1 ps-1 pe-2">
+                        <article className="text-white font-semibold py-2 min-[650px]:py-1 px-2 min-[650px]:ps-1 min-[650px]:pe-2">
                           <p className="text-[17px]">{video.title}</p>
                           <article className="mt-1 flex items-center gap-x-2 space-y-1">
                             <figure>

@@ -135,7 +135,7 @@ export async function loginUser(req, res, next) {
             username: existingUser.username,
             email: existingUser.email,
             avatar: existingUser.avatar,
-            channel: { channelId: channel._id }
+            channel: { channelId: channel ? channel._id : null }
         }
 
         // jwt token generate

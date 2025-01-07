@@ -81,9 +81,10 @@ function ChannelPage() {
       if (!token) {
         showToaster(
           "Login to perform this operation !",
-          "text-red-400",
+          "text-white",
           setToaster
         );
+        return;
       }
 
       showToaster("Video getting deleted !", "text-white", setToaster);
@@ -144,8 +145,8 @@ function ChannelPage() {
   return (
     <section
       className={`${
-        sidebarOpened ? "ml-[270px]" : "ml-0"
-      } overflow-hidden w-full py-3`}>
+        sidebarOpened ? "min:[600px]:ml-[270px]" : "ml-0"
+      } overflow-hidden w-full py-3 max-[350px]:mt-24 max-[685px]:mt-14`}>
       {channel && (
         <figure>
           <img
@@ -154,49 +155,55 @@ function ChannelPage() {
           />
         </figure>
       )}
-      <section className="flex items-center gap-x-5 mt-5">
-        {channel && (
-          <figure>
-            <img
-              src={channel?.avatar}
-              alt="Channel Avatar"
-              className="rounded-full w-48"
-            />
-          </figure>
-        )}
-        <article className="text-white w-full -mt-1 flex gap-x-7">
-          <article className="flex-1">
-            <h1 className="font-bold text-4xl">{channel?.title}</h1>
-            <article className="flex gap-x-4 text-lg">
-              <p className="font-semibold">@{channel?.handle}</p>
-              <p className="text-slate-400">89k subscribers</p>
-              {channelVideos?.totalItems ? (
-                <p className="text-slate-400">
-                  {channelVideos?.totalItems} videos
-                </p>
-              ) : null}
-            </article>
-            <article className="text-white mt-2 bg-slate-600 rounded-md px-2 py-1 w-full">
-              <p className="">{getFormattedDate(channel?.createdAt)}</p>
-              <p title={channel?.description}>
-                {channel?.description?.length > 200
-                  ? channel?.description.slice(0, 200) + "..."
-                  : channel?.description}
-              </p>
-            </article>
-          </article>
-          {user.channel.channelId === channel?._id && (
-            <button
-              onClick={() =>
-                setShowUpdateForm((prevState) => ({
-                  ...prevState,
-                  channel: true,
-                }))
-              }
-              className="self-start rounded-sm bg-slate-500 px-3 py-1 mt-1">
-              Update
-            </button>
+      <section className="mt-7">
+
+        <article className="text-white w-full flex max-[449px]:flex-col max-[449px]:items-center gap-x-3">
+          {channel && (
+            <figure>
+              <img
+                src={channel?.avatar}
+                alt="Channel Avatar"
+                className="rounded-full w-40 min-[650px]:w-48"
+              />
+            </figure>
           )}
+          <article className="flex max-[649px]:flex-col max-[449px]:items-center justify-between w-full mt-4">
+            <article className="flex-1">
+              <h1 className="font-bold text-3xl min-[650px]:text-4xl">{channel?.title}</h1>
+              <article className="flex max-[599px]:flex-col gap-x-4 text-lg mt-1">
+                <p className="font-semibold">@{channel?.handle}</p>
+                <article className="flex gap-x-2">
+                  <p className="text-slate-400">89k subscribers</p>
+                  {channelVideos?.totalItems ? (
+                    <p className="text-slate-400">
+                      {channelVideos?.totalItems} videos
+                    </p>
+                  ) : null}
+                </article>
+              </article>
+            </article>
+            {user.channel.channelId === channel?._id && (
+              <button
+                onClick={() =>
+                  setShowUpdateForm((prevState) => ({
+                    ...prevState,
+                    channel: true,
+                  }))
+                }
+                className="max-[649px]:w-full self-start rounded-sm bg-slate-500 px-3 py-1 mt-4">
+                Update
+              </button>
+            )}
+          </article>
+        </article>
+        
+        <article className="text-white mt-4 bg-slate-600 rounded-md px-2 py-1 w-full">
+          <p className="">{getFormattedDate(channel?.createdAt)}</p>
+          <p title={channel?.description}>
+            {channel?.description?.length > 200
+              ? channel?.description.slice(0, 200) + "..."
+              : channel?.description}
+          </p>
         </article>
         {showUpdateForm.channel && (
           <UpdateChannelForm

@@ -145,6 +145,10 @@ function errorHandler(errorCode, errorElementStateHandler) {
         case "UPDATE_VIDEO_ERROR":
             showToaster("An error occurred while updating video. Retry please !", "text-red-400", errorElementStateHandler);
             break;
+
+        default:
+            showToaster("An error occurred. Retry please !", "text-red-400", errorElementStateHandler);
+            break;
     }
 }
 

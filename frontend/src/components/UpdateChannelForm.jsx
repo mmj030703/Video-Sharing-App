@@ -67,9 +67,10 @@ function UpdateChannelForm({
     if (!token) {
       showToaster(
         "Login to perform this operation !",
-        "text-red-400",
+        "text-white",
         setToaster
       );
+      return;
     }
 
     data.append("userId", userId);
@@ -102,6 +103,8 @@ function UpdateChannelForm({
       );
       setChannelUpdated(Math.random());
     } else if (updatedChannel.errorCode === "INVALID_TOKEN") {
+      showToaster("Please login again !", "text-white", setToaster);
+      logout();
       navigate("/login");
     } else if (updatedChannel.errorCode === "TOKEN_EXPIRED") {
       console.log("failed");
@@ -121,6 +124,8 @@ function UpdateChannelForm({
           "INVALID_REFRESH_TOKEN",
         ].includes(resJson.errorCode)
       ) {
+        showToaster("Please login again !", "text-white", setToaster);
+        logout();
         navigate("/login");
       }
     } else {
@@ -168,17 +173,37 @@ function UpdateChannelForm({
     return false;
   }
 
+  function logout() {
+        dispatch(
+        updateUserData({
+          userId: "",
+          email: "",
+          username: "",
+          avatar: "",
+          isLoggedIn: false,
+          createdChannel: false,
+          channel: {
+            channelId: "",
+          },
+        })
+      );
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("channelId");
+  }
+
   return (
-    <section className="cursor-not-allowed fixed z-50 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
-      <section className="cursor-pointer bg-slate-700 p-5 rounded-md shadow-2xl">
+    <section className="cursor-not-allowed fixed z-50 top-0 left-0 px-4 min-h-screen w-screen flex flex-col justify-center items-center">
+      <section className="cursor-pointer bg-slate-700 max-[599px]:w-full p-3 min-[600px]:p-5 rounded-md shadow-2xl">
         <header>
-          <h1 className="text-white text-3xl font-semibold">Update Channel</h1>
+          <h1 className="text-white text-3xl font-semibold max-[600px]:text-center">Update Channel</h1>
         </header>
         <form
           onSubmit={handleChannelUpdate}
-          className="mt-9 flex flex-col gap-y-4">
+          className="mt-9 flex flex-col gap-y-4 w-full">
           {/* title field */}
-          <fieldset className="flex flex-col w-[500px]">
+          <fieldset className="flex flex-col w-full min-[600px]:w-[500px]">
             <label className="text-white text-[20px] font-semibold">
               Title
             </label>
@@ -192,7 +217,7 @@ function UpdateChannelForm({
             />
           </fieldset>
           {/* description field */}
-          <fieldset className="flex flex-col w-[500px]">
+          <fieldset className="flex flex-col w-full min-[600px]:w-[500px]">
             <label className="text-white text-[20px] font-semibold">
               Description
             </label>
@@ -206,7 +231,7 @@ function UpdateChannelForm({
             />
           </fieldset>
           {/* coverImage field */}
-          <fieldset className="flex flex-col w-[500px]">
+          <fieldset className="flex flex-col w-full min-[600px]:w-[500px]">
             <label className="text-white text-[20px] font-semibold">
               Cover Image
             </label>
@@ -219,7 +244,7 @@ function UpdateChannelForm({
             />
           </fieldset>
           {/* avatar field */}
-          <fieldset className="flex flex-col w-[500px]">
+          <fieldset className="flex flex-col w-full min-[600px]:w-[500px]">
             <label className="text-white text-[20px] font-semibold">
               Avatar
             </label>

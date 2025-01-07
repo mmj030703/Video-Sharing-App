@@ -23,7 +23,7 @@ function AppBody() {
   useEffect(() => {
     setToaster({
       showToaster: true,
-      toasterMessage: "Initial load might take some time! Hold Tight.",
+      toasterMessage: "Refresh might take some time! Hold Tight.",
       toasterTailwindTextColorClass: "text-white",
     });
 
@@ -94,6 +94,9 @@ function AppBody() {
 
     if (userId) {
       fetchData(`/api/v1/users/user/${userId}`, "user");
+    }
+
+    if (channelId) {
       fetchData(`/api/v1/channels/channel/${channelId}`, "channel");
     }
   }, [token]);

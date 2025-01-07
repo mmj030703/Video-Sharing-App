@@ -119,7 +119,7 @@ function RegisterPage() {
           encType="multipart/form-data"
           className="mt-5 flex flex-col items-center gap-y-2">
           {/* username field */}
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col min-[360px]:w-[350px]">
             <label className="text-white text-[20px] font-semibold">
               Username
             </label>
@@ -133,7 +133,7 @@ function RegisterPage() {
           </fieldset>
 
           {/* email field */}
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col min-[360px]:w-[350px]">
             <label className="text-white text-[20px] font-semibold">
               Email
             </label>
@@ -147,7 +147,7 @@ function RegisterPage() {
           </fieldset>
 
           {/* password field */}
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col min-[360px]:w-[350px]">
             <label className="text-white text-[20px] font-semibold">
               Password
             </label>
@@ -161,7 +161,7 @@ function RegisterPage() {
           </fieldset>
 
           {/* avatar field */}
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col w-min min-[360px]:w-[350px]">
             <label className="text-white text-[20px] font-semibold">
               Avatar
             </label>

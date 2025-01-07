@@ -5,7 +5,7 @@ import Toaster from "../components/Toaster";
 import { useState } from "react";
 import showToaster from "../utils/showToaster";
 import errorHandler from "../utils/errorHandler";
-import { Provider, useDispatch } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { updateUserData } from "../utils/slices/userSlice";
 import store from "../app/store.js";
 
@@ -22,6 +22,12 @@ function LoginComponent() {
   });
   const [loginLoading, setLoginLoading] = useState(false);
   const navigate = useNavigate();
+  const user = useSelector(store => store.userSlice.user);
+
+  if (user.isLoggedIn) {
+    showToaster("Already logged in !", "text-white", setToaster);
+    navigate("/");
+  }
 
   function handleDataChange(e) {
     const { name, value } = e.target;
@@ -58,15 +64,17 @@ function LoginComponent() {
     if (userData?.status === "success") {
       localStorage.setItem("accessToken", userData.data.accessToken);
       localStorage.setItem("userId", userData.data.userData.userId);
-      localStorage.setItem(
+      if (userData.data.userData.channel?.channelId) {
+        localStorage.setItem(
         "channelId",
         userData.data.userData.channel.channelId
-      );
+        );
+      }
 
       dispatch(
         updateUserData({
           ...userData.data.userData,
-          channelCreated: userData.data.userData.channel.channelId
+          channelCreated: userData.data.userData.channel?.channelId
             ? true
             : false,
           isLoggedIn: true,
@@ -123,7 +131,7 @@ function LoginComponent() {
           onSubmit={handleLogin}
           className="mt-5 flex flex-col items-center gap-y-2">
           {/* email field */}
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col min-[400px]:w-[350px]">
             <label className="text-white text-[20px] font-semibold">
               Email
             </label>
@@ -136,7 +144,7 @@ function LoginComponent() {
             />
           </fieldset>
           {/* password field */}
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col min-[400px]:w-[350px]">
             <label className="text-white text-[20px] font-semibold">
               Password
             </label>

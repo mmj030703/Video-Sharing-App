@@ -27,10 +27,10 @@ function SearchPage() {
   return (
     <section
       className={`${
-        sidebarOpened ? "ml-[270px]" : "ml-0"
-      } overflow-hidden w-full py-3`}>
+        sidebarOpened ? "min-[850px]:ml-[270px]" : "ml-0"
+      } py-3 max-[350px]:mt-24 max-[685px]:mt-14`}>
       {/* List of videos as per query */}
-      <section className="w-full">
+      <section className="w-full flex flex-col gap-y-2">
         {searchVideos.length ? (
           searchVideos.map((video) => {
             const date = new Date(video.createdAt);
@@ -51,14 +51,14 @@ function SearchPage() {
 
             return (
               <Link to={`/videos/watch/${video._id}`} key={video._id}>
-                <article className="bg-slate-600 rounded-md flex gap-x-4 mt-3">
+                <article className="bg-slate-600 rounded-md flex shadow-lg flex-col min-[650px]:flex-row gap-x-4 mt-3">
                   <figure>
                     <img
                       src={video.thumbnail}
-                      className="w-[260px] h-full object-cover rounded-s-md"
+                      className="w-full min-[650px]:min-w-[260px] min-[650px]:w-[260px] h-[200px] min-[650px]:h-full object-cover rounded-md min-[650px]:rounded-s-md"
                     />
                   </figure>
-                  <article className="text-white font-semibold py-1">
+                  <article className="text-white font-semibold py-3 min-[650px]:py-1 px-2 min-[650px]:px-0">
                     <p className="text-[22px]">{video.title}</p>
                     <article className="mt-1 flex items-center gap-x-4 space-y-1">
                       <figure>

@@ -54,6 +54,11 @@ function CreateChannelForm({ setToaster, setShowForm }) {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
 
+    if (!token) {
+      showToaster("Please login to perform this operation !", "text-white", setToaster);
+      return;
+    }
+    
     data.append("userId", userId);
 
     setChannelLoaderLoading(true);
@@ -90,6 +95,8 @@ function CreateChannelForm({ setToaster, setShowForm }) {
         setToaster
       );
     } else if (channel.errorCode === "INVALID_TOKEN") {
+      showToaster("Please login again !", "text-white", setToaster);
+      logout();
       navigate("/login");
     } else if (channel.errorCode === "TOKEN_EXPIRED") {
       console.log("failed");
@@ -109,6 +116,8 @@ function CreateChannelForm({ setToaster, setShowForm }) {
           "INVALID_REFRESH_TOKEN",
         ].includes(resJson.errorCode)
       ) {
+        showToaster("Please login again !", "text-white", setToaster);
+        logout();
         navigate("/login");
       }
     } else {
@@ -152,15 +161,35 @@ function CreateChannelForm({ setToaster, setShowForm }) {
     return false;
   }
 
+ function logout() {
+        dispatch(
+        updateUserData({
+          userId: "",
+          email: "",
+          username: "",
+          avatar: "",
+          isLoggedIn: false,
+          createdChannel: false,
+          channel: {
+            channelId: "",
+          },
+        })
+      );
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("channelId");
+  }
+
   return (
-    <section className="cursor-not-allowed fixed z-50 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
-      <section className="cursor-pointer bg-slate-700 p-5 rounded-md shadow-2xl">
+    <section className="cursor-not-allowed fixed z-50 top-0 px-4 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
+      <section className="cursor-pointer max-[599px]:w-full bg-slate-700 p-5 rounded-md shadow-2xl">
         <header>
           <h1 className="text-white text-3xl font-semibold">Create Channel</h1>
         </header>
         <form
           onSubmit={handleChannelCreate}
-          className="mt-7 flex flex-col gap-y-2 w-[600px]">
+          className="mt-7 flex flex-col gap-y-2 min-[800px]:w-[600px]">
           {/* message field */}
           <fieldset className="flex flex-col">
             <label className="text-white text-[17px] font-semibold">

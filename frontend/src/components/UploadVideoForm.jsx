@@ -161,16 +161,16 @@ function UploadVideoForm({ setToaster, setShowForm }) {
   }
 
   return (
-    <section className="cursor-not-allowed fixed z-40 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
-      <section className="cursor-pointer bg-slate-700 p-5 rounded-md shadow-2xl">
+    <section className="cursor-not-allowed fixed z-40 top-0 px-4 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
+      <section className="cursor-pointer max-[599px]:w-full bg-slate-700 p-5 rounded-md shadow-2xl">
         <header>
           <h1 className="text-white text-3xl font-semibold">Upload Video</h1>
         </header>
         <form
           onSubmit={handleVideoUpload}
-          className="mt-7 flex flex-col gap-y-2 w-[600px]">
+          className="mt-7 flex flex-col gap-y-2 min-[600px]:w-[600px]">
           {/* message field */}
-          <fieldset className="flex flex-col">
+          <fieldset className="flex flex-col max-[599px]:w-full">
             <label className="text-white text-[17px] font-semibold">
               Title
             </label>
@@ -184,7 +184,7 @@ function UploadVideoForm({ setToaster, setShowForm }) {
             />
           </fieldset>
 
-          <fieldset className="flex flex-col">
+          <fieldset className="flex flex-col max-[599px]:w-full">
             <label className="text-white text-[17px] font-semibold">
               Description
             </label>
@@ -198,7 +198,7 @@ function UploadVideoForm({ setToaster, setShowForm }) {
             />
           </fieldset>
 
-          <fieldset className="flex flex-col">
+          <fieldset className="flex flex-col max-[599px]:w-full">
             <label className="text-white text-[17px] font-semibold">
               Category
             </label>
@@ -220,7 +220,7 @@ function UploadVideoForm({ setToaster, setShowForm }) {
             </select>
           </fieldset>
 
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col min-[600px]:w-[350px] max-[599px]:w-full">
             <label className="text-white text-[17px] font-semibold">
               Thumbnail
             </label>
@@ -233,7 +233,7 @@ function UploadVideoForm({ setToaster, setShowForm }) {
             />
           </fieldset>
 
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col min-[600px]:w-[350px] max-[599px]:w-full">
             <label className="text-white text-[17px] font-semibold">
               Video
             </label>

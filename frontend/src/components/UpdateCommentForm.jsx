@@ -32,6 +32,11 @@ function UpdateCommentForm({
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
 
+    if (!token) {
+      showToaster("Please login to perform this operation !", "text-white", setToaster);
+      return;
+    }
+
     const res = await fetch(`/api/v1/comments/update/${comment._id}`, {
       method: "PATCH",
       headers: {
@@ -69,6 +74,8 @@ function UpdateCommentForm({
         );
       }
     } else if (updatedComment.errorCode === "INVALID_TOKEN") {
+      showToaster("Please login again !", "text-white", setToaster);
+      logout();
       navigate("/login");
     } else if (updatedComment.errorCode === "TOKEN_EXPIRED") {
       console.log("failed");
@@ -88,6 +95,8 @@ function UpdateCommentForm({
           "INVALID_REFRESH_TOKEN",
         ].includes(resJson.errorCode)
       ) {
+        showToaster("Please login again !", "text-white", setToaster);
+        logout();
         navigate("/login");
       }
     } else {
@@ -96,9 +105,29 @@ function UpdateCommentForm({
     }
   }
 
+  function logout() {
+        dispatch(
+        updateUserData({
+          userId: "",
+          email: "",
+          username: "",
+          avatar: "",
+          isLoggedIn: false,
+          createdChannel: false,
+          channel: {
+            channelId: "",
+          },
+        })
+      );
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("channelId");
+  }
+
   return (
-    <section className="cursor-not-allowed fixed z-50 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
-      <section className="cursor-pointer bg-slate-700 p-5 rounded-md shadow-2xl">
+    <section className="cursor-not-allowed fixed px-4 z-50 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
+      <section className="cursor-pointer max-[449px]:w-full bg-slate-700 p-5 rounded-md shadow-2xl">
         <header>
           <h1 className="text-white text-3xl font-semibold">Update Comment</h1>
         </header>
@@ -106,7 +135,7 @@ function UpdateCommentForm({
           onSubmit={handleCommentUpdate}
           className="mt-9 flex flex-col gap-y-2">
           {/* message field */}
-          <fieldset className="flex flex-col w-[350px]">
+          <fieldset className="flex flex-col min-[450px]:w-[350px]">
             <label className="text-white text-[20px] font-semibold">
               Comment
             </label>
@@ -119,7 +148,7 @@ function UpdateCommentForm({
               autoComplete="off"
             />
           </fieldset>
-          <article className="flex justify-start gap-x-4">
+          <article className="flex max-[330px]:flex-col justify-start gap-x-4">
             <button
               type="submit"
               name="update"

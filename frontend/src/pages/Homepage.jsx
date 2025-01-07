@@ -26,17 +26,17 @@ function HomePage() {
   return (
     <section
       className={`${
-        sidebarOpened ? "ml-[270px]" : "ml-0"
+        sidebarOpened ? "min-[850px]:ml-[270px]" : "ml-0"
       } overflow-hidden w-full py-3`}>
       {/* Categories */}
       <section className="overflow-scroll scrollbar-none">
-        <section className="flex gap-x-4">
+        <section className="flex gap-x-4 max-[350px]:mt-24 max-[685px]:mt-14">
           <button
             className="font-semibold text-[1.05rem] text-white py-[5px] px-4 cursor-pointer bg-slate-600 rounded-sm"
             onClick={() => fetchHomepageVideos("all")}>
             All
           </button>
-          {categories.length &&
+          {categories.length ?
             categories.map((category) => {
               return (
                 <button
@@ -47,13 +47,16 @@ function HomePage() {
                     category.name.slice(1)}
                 </button>
               );
-            })}
+            })
+            :
+            null
+          }
         </section>
       </section>
 
       {/* List of videos as per categories */}
-      <section className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-x-4 gap-y-5">
-        {homepageVideos.length &&
+      <section className="mt-6 grid max-[550px]:place-items-center grid-cols-[repeat(auto-fit, minmax(1fr,1fr))] min-[550px]:grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-x-4 gap-y-5">
+        {homepageVideos.length ?
           homepageVideos.map((video) => {
             const date = new Date(video.createdAt);
             const months = {
@@ -72,12 +75,12 @@ function HomePage() {
             };
 
             return (
-              <Link to={`/videos/watch/${video._id}`} key={video._id}>
-                <article className="bg-slate-600 rounded-md max-w-[400px] min-h-[350px]">
+              <Link to={`/videos/watch/${video._id}`} key={video._id} className="w-full">
+                <article className="bg-slate-600 rounded-md min-[550px]:max-w-[400px] min-h-[350px]">
                   <figure>
                     <img
                       src={video.thumbnail}
-                      className="w-full h-[220px] object-cover"
+                      className="w-full h-[220px] object-cover rounded-md"
                     />
                   </figure>
                   <article className="flex gap-x-4 px-2 py-2">
@@ -108,7 +111,12 @@ function HomePage() {
                 </article>
               </Link>
             );
-          })}
+          })
+        :
+        <h1 className="w-full whitespace-nowrap text-5xl mt-5 text-slate-600 font-bold">
+              No videos !
+          </h1>
+        }
       </section>
     </section>
   );

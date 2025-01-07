@@ -172,6 +172,8 @@ export async function updateChannelById(req, res, next) {
         const { id: channelId } = req.params;
         const { userId, title, description } = req.body;
 
+        console.log("level 1")
+
         if (doEmptyFieldExist(channelId, userId)) {
             return res.status(400).json({ error: null, message: "Required fields are missing !" });
         }
@@ -201,12 +203,14 @@ export async function updateChannelById(req, res, next) {
             return res.status(403).json({ error: null, errorCode: "UNAUTHORISED_ERROR", message: "Unauthorized access !" });
         }
 
+        console.log("level 2")
+
         let coverImage = null;
         let avatar = null;
         let coverImageUrl = null;
         let avatarUrl = null;
 
-        console.log(req.files)
+        // console.log(req.files)
 
         if (req.files && Object.keys(req.files).length > 0) {
             try {
@@ -248,8 +252,10 @@ export async function updateChannelById(req, res, next) {
             }
         }
 
-        console.log(avatar)
-        console.log(avatarUrl)
+        console.log("level 3")
+
+        // console.log(avatar)
+        // console.log(avatarUrl)
 
         // Update fields explicitly
         if (title) channel.title = title;
@@ -266,6 +272,8 @@ export async function updateChannelById(req, res, next) {
         }
 
         await channel.save();
+
+        console.log("level 4")
 
         res.status(200)
             .send({

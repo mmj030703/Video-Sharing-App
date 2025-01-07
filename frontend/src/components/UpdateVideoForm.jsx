@@ -66,9 +66,10 @@ function UpdateVideoForm({
     if (!token) {
       showToaster(
         "Login to perform this operation !",
-        "text-red-400",
+        "text-white",
         setToaster
       );
+      return;
     }
 
     data.append("userId", userId);
@@ -99,6 +100,8 @@ function UpdateVideoForm({
       );
       setChannelUpdated(Math.random());
     } else if (updatedVideo.errorCode === "INVALID_TOKEN") {
+      showToaster("Please login again !", "text-white", setToaster);
+      logout();
       navigate("/login");
     } else if (updatedVideo.errorCode === "TOKEN_EXPIRED") {
       console.log("failed");
@@ -118,6 +121,8 @@ function UpdateVideoForm({
           "INVALID_REFRESH_TOKEN",
         ].includes(resJson.errorCode)
       ) {
+        showToaster("Please login again !", "text-white", setToaster);
+        logout();
         navigate("/login");
       }
     } else {
@@ -154,9 +159,29 @@ function UpdateVideoForm({
     return false;
   }
 
+  function logout() {
+        dispatch(
+        updateUserData({
+          userId: "",
+          email: "",
+          username: "",
+          avatar: "",
+          isLoggedIn: false,
+          createdChannel: false,
+          channel: {
+            channelId: "",
+          },
+        })
+      );
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("channelId");
+  }
+
   return (
-    <section className="cursor-not-allowed fixed z-50 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
-      <section className="cursor-pointer bg-slate-700 p-5 rounded-md shadow-2xl">
+    <section className="cursor-not-allowed fixed z-50 px-4 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
+      <section className="cursor-pointer max-[599px]:w-full bg-slate-700 p-5 rounded-md shadow-2xl">
         <header>
           <h1 className="text-white text-3xl font-semibold">Update Video</h1>
         </header>
@@ -164,7 +189,7 @@ function UpdateVideoForm({
           onSubmit={handleVideoUpdate}
           className="mt-9 flex flex-col gap-y-4">
           {/* title field */}
-          <fieldset className="flex flex-col w-[500px]">
+          <fieldset className="flex flex-col min-[600px]:w-[500px]">
             <label className="text-white text-[20px] font-semibold">
               Title
             </label>
@@ -178,7 +203,7 @@ function UpdateVideoForm({
             />
           </fieldset>
           {/* description field */}
-          <fieldset className="flex flex-col w-[500px]">
+          <fieldset className="flex flex-col min-[600px]:w-[500px]">
             <label className="text-white text-[20px] font-semibold">
               Description
             </label>
@@ -192,7 +217,7 @@ function UpdateVideoForm({
             />
           </fieldset>
           {/* thumbnail field */}
-          <fieldset className="flex flex-col w-[500px]">
+          <fieldset className="flex flex-col min-[600px]:w-[500px]">
             <label className="text-white text-[20px] font-semibold">
               Thumbnail
             </label>
