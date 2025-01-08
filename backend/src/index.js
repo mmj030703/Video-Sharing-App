@@ -12,5 +12,5 @@ connectDB()
         })
     })
     .catch(error => {
-        console.log("An error occurred while creating database !", error);
+        console.log('An error occurred while creating database !', error);
     });
