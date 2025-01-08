@@ -15,8 +15,6 @@ export async function registerUser(req, res, next) {
         const { username, email, password } = req.body;
         const avatarObj = req.file;
 
-        console.log(username, email, password, avatarObj)
-
         // validate user data
         if (doEmptyFieldExist(username, email, password)) {
             return res.status(400).json({ errorCode: "FIELDS_MISSING", message: "Field should not be empty !" });

@@ -71,8 +71,6 @@ function RegisterPage() {
     } else {
       errorHandler(userData.errorCode, setToaster);
     }
-
-    console.log(userData);
   }
 
   function validateFormData(data) {

@@ -3,6 +3,8 @@ import { useState } from "react";
 import showToaster from "../utils/showToaster";
 import { useNavigate } from "react-router-dom";
 import errorHandler from "../utils/errorHandler";
+import { updateUserData } from "../utils/slices/userSlice";
+import { useDispatch } from "react-redux";
 
 function UpdateCommentForm({
   setToaster,
@@ -14,6 +16,7 @@ function UpdateCommentForm({
   const [message, setMessage] = useState(comment.message);
   const [commentLoaderLoading, setCommentLoaderLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   function handleCommentUpdate(e) {
     e?.preventDefault();
@@ -33,7 +36,11 @@ function UpdateCommentForm({
     const token = localStorage.getItem("accessToken");
 
     if (!token) {
-      showToaster("Please login to perform this operation !", "text-white", setToaster);
+      showToaster(
+        "Please login to perform this operation !",
+        "text-white",
+        setToaster
+      );
       return;
     }
 
@@ -51,21 +58,16 @@ function UpdateCommentForm({
 
     const updatedComment = await res.json();
 
-    console.log(updatedComment);
-
     if (updatedComment.status === "success") {
       const commentsRes = await fetch(`/api/v1/comments/all/${comment.video}`);
       const comments = await commentsRes.json();
-      console.log(comments);
 
       setCommentLoaderLoading(false);
 
       if (comments.status === "success") {
-        console.log(comments);
         setComments(comments.data.comments);
         setShowUpdateCommentForm(false);
         setOpenCommentEditListId(null);
-        console.log("comments after fetching : ", comments);
 
         showToaster(
           "Comment Updated succesfully !",
@@ -78,8 +80,6 @@ function UpdateCommentForm({
       logout();
       navigate("/login");
     } else if (updatedComment.errorCode === "TOKEN_EXPIRED") {
-      console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -106,23 +106,23 @@ function UpdateCommentForm({
   }
 
   function logout() {
-        dispatch(
-        updateUserData({
-          userId: "",
-          email: "",
-          username: "",
-          avatar: "",
-          isLoggedIn: false,
-          createdChannel: false,
-          channel: {
-            channelId: "",
-          },
-        })
-      );
+    dispatch(
+      updateUserData({
+        userId: "",
+        email: "",
+        username: "",
+        avatar: "",
+        isLoggedIn: false,
+        createdChannel: false,
+        channel: {
+          channelId: "",
+        },
+      })
+    );
 
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("channelId");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("channelId");
   }
 
   return (

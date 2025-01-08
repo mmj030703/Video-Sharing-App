@@ -47,8 +47,6 @@ function ChannelPage() {
 
     setChannel(channel.data);
     setChannelVideos(channelVideos.data);
-
-    console.log(channel, channelVideos);
   }
 
   function getFormattedDate(createdAt) {
@@ -102,8 +100,6 @@ function ChannelPage() {
 
       const deletedVideo = await res.json();
 
-      console.log(deletedVideo);
-
       if (deletedVideo?.status === "success") {
         setOpenVideoEditListId(false);
         showToaster(
@@ -115,8 +111,6 @@ function ChannelPage() {
       } else if (deletedVideo.errorCode === "INVALID_TOKEN") {
         navigate("/login");
       } else if (deletedVideo.errorCode === "TOKEN_EXPIRED") {
-        console.log("failed");
-
         const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
         const resJson = await res.json();
 
@@ -156,7 +150,6 @@ function ChannelPage() {
         </figure>
       )}
       <section className="mt-7">
-
         <article className="text-white w-full flex max-[449px]:flex-col max-[449px]:items-center gap-x-3">
           {channel && (
             <figure>
@@ -169,7 +162,9 @@ function ChannelPage() {
           )}
           <article className="flex max-[649px]:flex-col max-[449px]:items-center justify-between w-full mt-4">
             <article className="flex-1">
-              <h1 className="font-bold text-3xl min-[650px]:text-4xl">{channel?.title}</h1>
+              <h1 className="font-bold text-3xl min-[650px]:text-4xl">
+                {channel?.title}
+              </h1>
               <article className="flex max-[599px]:flex-col gap-x-4 text-lg mt-1">
                 <p className="font-semibold">@{channel?.handle}</p>
                 <article className="flex gap-x-2">
@@ -196,7 +191,7 @@ function ChannelPage() {
             )}
           </article>
         </article>
-        
+
         <article className="text-white mt-4 bg-slate-600 rounded-md px-2 py-1 w-full">
           <p className="">{getFormattedDate(channel?.createdAt)}</p>
           <p title={channel?.description}>

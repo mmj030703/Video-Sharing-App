@@ -32,7 +32,6 @@ function UploadVideoForm({ setToaster, setShowForm }) {
 
   function handleDataChange(e) {
     const { name, value, files } = e.target;
-    if (name === "categories") console.log(name, value);
 
     let newState = {};
 
@@ -59,7 +58,6 @@ function UploadVideoForm({ setToaster, setShowForm }) {
 
     for (const [name, value] of Object.entries(formData)) {
       let transformedValue = value;
-      console.log(transformedValue);
 
       if (name === "categories") {
         const category = categories.find(
@@ -70,7 +68,6 @@ function UploadVideoForm({ setToaster, setShowForm }) {
           transformedValue = JSON.stringify([category._id]);
         }
       }
-      if (name === "categories") console.log(transformedValue);
       data.append(name, transformedValue);
     }
 
@@ -98,8 +95,6 @@ function UploadVideoForm({ setToaster, setShowForm }) {
     });
 
     const video = await res.json();
-
-    console.log(video);
 
     if (video?.status === "success") {
       setVideoLoaderLoading(false);

@@ -172,8 +172,6 @@ export async function updateChannelById(req, res, next) {
         const { id: channelId } = req.params;
         const { userId, title, description } = req.body;
 
-        console.log("level 1")
-
         if (doEmptyFieldExist(channelId, userId)) {
             return res.status(400).json({ error: null, message: "Required fields are missing !" });
         }
@@ -203,14 +201,10 @@ export async function updateChannelById(req, res, next) {
             return res.status(403).json({ error: null, errorCode: "UNAUTHORISED_ERROR", message: "Unauthorized access !" });
         }
 
-        console.log("level 2")
-
         let coverImage = null;
         let avatar = null;
         let coverImageUrl = null;
         let avatarUrl = null;
-
-        // console.log(req.files)
 
         if (req.files && Object.keys(req.files).length > 0) {
             try {
@@ -252,11 +246,6 @@ export async function updateChannelById(req, res, next) {
             }
         }
 
-        console.log("level 3")
-
-        // console.log(avatar)
-        // console.log(avatarUrl)
-
         // Update fields explicitly
         if (title) channel.title = title;
         if (description) channel.description = description;
@@ -272,8 +261,6 @@ export async function updateChannelById(req, res, next) {
         }
 
         await channel.save();
-
-        console.log("level 4")
 
         res.status(200)
             .send({
@@ -349,9 +336,6 @@ export async function uploadVideo(req, res, next) {
         // Handling Images
         const media = req.files;
 
-        console.log(media);
-
-
         if (!media || Object.keys(media).length < 2) {
             return res.status(400).json({ error: null, errorCode: "MEDIA_FILES_NOT_UPLOADED", message: "All media files are required !" });
         }
@@ -389,7 +373,6 @@ export async function uploadVideo(req, res, next) {
 
             optimisedVideoUrl = getOptimizedUrl(video.public_id, video.resource_type, VIDEO_DIMENSIONS.width, VIDEO_DIMENSIONS.height) || video.secure_url;
             optimisedThumbnailUrl = getOptimizedUrl(thumbnail.public_id, thumbnail.resource_type, THUMBNAIL_DIMENSIONS.width, THUMBNAIL_DIMENSIONS.height) || thumbnail.secure_url;
-            console.log(optimisedVideoUrl, optimisedThumbnailUrl);
         } catch (error) {
             console.log("Cloudinary Video & thumbnail upload error: ", error.message || error);
             return res.status(400).json({ error: error.message || error, errorCode: "VIDEO_UPLOAD_ERROR", message: "Cloudinary Video & thumbnail upload:: Internal Server Error" });

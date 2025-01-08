@@ -69,7 +69,6 @@ function VideoPlayerPage() {
   }, [id]);
 
   async function fetchLikeDislikeUserStatus() {
-    // console.log("id:", id);
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
 
@@ -92,12 +91,10 @@ function VideoPlayerPage() {
     );
 
     const likeDislikeUserStatus = await likeDislikeUserStatusRes.json();
-    // console.log(likeDislikeUserStatus);
 
     // Logged In User like-dislike status
     if (likeDislikeUserStatus.status === "success") {
       if (likeDislikeUserStatus.data.userLikedDisliked === true) {
-        // console.log("user has either liked or disliked");
         setLikeDislikeOperation({
           liked: likeDislikeUserStatus.data.type === true ? true : false,
           disliked: likeDislikeUserStatus.data.type === false ? true : false,
@@ -112,8 +109,6 @@ function VideoPlayerPage() {
       logout();
       navigate("/login");
     } else if (likeDislikeUserStatus.errorCode === "TOKEN_EXPIRED") {
-      // console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -220,15 +215,12 @@ function VideoPlayerPage() {
     if (comment?.status === "success") {
       const commentsRes = await fetch(`/api/v1/comments/all/${id}`);
       const comments = await commentsRes.json();
-      // console.log(comments);
 
       setCommentLoaderLoading(false);
 
       if (comments.status === "success") {
-        // console.log(comments);
         setCommentInput("");
         setComments(comments.data.comments);
-        // console.log("comments after fetching : ", comments);
 
         showToaster(
           "Comment added succesfully !",
@@ -247,8 +239,6 @@ function VideoPlayerPage() {
       logout();
       navigate("/login");
     } else if (comment.errorCode === "TOKEN_EXPIRED") {
-      console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -272,8 +262,6 @@ function VideoPlayerPage() {
       setCommentLoaderLoading(false);
       errorHandler(comment.errorCode, setToaster);
     }
-
-    // console.log(comment);
   }
 
   function validateCommentMessage(message) {
@@ -286,8 +274,6 @@ function VideoPlayerPage() {
   }
 
   async function handleCommentDelete(commentId) {
-    console.log(commentId);
-
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("accessToken");
 
@@ -313,18 +299,13 @@ function VideoPlayerPage() {
 
     const deletedComment = await res.json();
 
-    console.log(deletedComment);
-
     if (deletedComment.status === "success") {
       const commentsRes = await fetch(`/api/v1/comments/all/${id}`);
       const comments = await commentsRes.json();
-      console.log(comments);
 
       if (comments.status === "success") {
-        console.log(comments);
         setComments(comments.data.comments);
         setOpenCommentEditListId(null);
-        console.log("comments after fetching : ", comments);
 
         showToaster(
           "Comment deleted succesfully !",
@@ -337,8 +318,6 @@ function VideoPlayerPage() {
       logout();
       navigate("/login");
     } else if (deletedComment.errorCode === "TOKEN_EXPIRED") {
-      console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -402,10 +381,7 @@ function VideoPlayerPage() {
     const resJson = await res.json();
 
     if (resJson.status === "success") {
-      console.log("success");
-
       setLikeDislikeOperation((prevState) => {
-        console.log("prev", prevState);
         let liked = prevState.liked;
         let disliked = prevState.disliked;
 
@@ -422,7 +398,6 @@ function VideoPlayerPage() {
           newState.liked = false;
         }
 
-        console.log(newState);
         return newState;
       });
     } else if (resJson.errorCode === "INVALID_TOKEN") {
@@ -430,8 +405,6 @@ function VideoPlayerPage() {
       logout();
       navigate("/login");
     } else if (resJson.errorCode === "TOKEN_EXPIRED") {
-      console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -514,18 +487,19 @@ function VideoPlayerPage() {
                       </article>
                     </section>
                     <button
-                        onClick={(e) => {
-                          e.target.textContent =
-                            e.target.textContent === "Subscribe"
-                              ? "Subscribed"
-                              : "Subscribe";
-                        }}
-                        className="hover:bg-slate-500 max-[599px]:order-2 max-[599px]:mt-3 max-[599px]:w-full min-[600px]:ml-2 font-semibold text-[1.2rem] text-white py-[7px] px-5 cursor-pointer bg-slate-600 rounded-sm">
-                        Subscribe
-                      </button>
+                      onClick={(e) => {
+                        e.target.textContent =
+                          e.target.textContent === "Subscribe"
+                            ? "Subscribed"
+                            : "Subscribe";
+                      }}
+                      className="hover:bg-slate-500 max-[599px]:order-2 max-[599px]:mt-3 max-[599px]:w-full min-[600px]:ml-2 font-semibold text-[1.2rem] text-white py-[7px] px-5 cursor-pointer bg-slate-600 rounded-sm">
+                      Subscribe
+                    </button>
                     <article className="flex justify-center min-[600px]:mt-0 mt-4 min-[600px]:ml-auto max-[599px]:self-start self-center mr-5 bg-slate-500 rounded-md py-1 max-[599px]:w-full">
                       <button
-                        onClick={() => handleLikeDislikeOperation("like")} className="flex justify-center w-full border-e-2">
+                        onClick={() => handleLikeDislikeOperation("like")}
+                        className="flex justify-center w-full border-e-2">
                         {!likeDislikeOperation.liked && (
                           <FontAwesomeIcon
                             icon={faThumbsUpRegular}
@@ -540,7 +514,8 @@ function VideoPlayerPage() {
                         )}
                       </button>
                       <button
-                        onClick={() => handleLikeDislikeOperation("dislike")} className="flex justify-center w-full">
+                        onClick={() => handleLikeDislikeOperation("dislike")}
+                        className="flex justify-center w-full">
                         {!likeDislikeOperation.disliked && (
                           <FontAwesomeIcon
                             icon={faThumbsDownRegular}

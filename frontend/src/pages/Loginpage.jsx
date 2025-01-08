@@ -22,7 +22,7 @@ function LoginComponent() {
   });
   const [loginLoading, setLoginLoading] = useState(false);
   const navigate = useNavigate();
-  const user = useSelector(store => store.userSlice.user);
+  const user = useSelector((store) => store.userSlice.user);
 
   if (user.isLoggedIn) {
     showToaster("Already logged in !", "text-white", setToaster);
@@ -66,8 +66,8 @@ function LoginComponent() {
       localStorage.setItem("userId", userData.data.userData.userId);
       if (userData.data.userData.channel?.channelId) {
         localStorage.setItem(
-        "channelId",
-        userData.data.userData.channel.channelId
+          "channelId",
+          userData.data.userData.channel.channelId
         );
       }
 
@@ -93,8 +93,6 @@ function LoginComponent() {
     } else {
       errorHandler(userData.errorCode, setToaster);
     }
-
-    console.log(userData);
   }
 
   function validateFormData(data) {

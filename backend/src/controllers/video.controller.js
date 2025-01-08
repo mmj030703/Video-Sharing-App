@@ -39,8 +39,6 @@ export async function getAllVideosByCategory(req, res, next) {
 export async function getVideoById(req, res, next) {
     try {
         const { id } = req.params;
-        console.log("params: ", id);
-
 
         if (!id || typeof id !== "string" || !isValidMongoDBObjectId(id)) {
             return res.status(400).json({ error: null, message: "Invalid video id !" });

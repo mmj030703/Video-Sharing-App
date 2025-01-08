@@ -3,6 +3,8 @@ import { useState } from "react";
 import showToaster from "../utils/showToaster";
 import errorHandler from "../utils/errorHandler";
 import { useNavigate } from "react-router-dom";
+import { updateUserData } from "../utils/slices/userSlice";
+import { useDispatch } from "react-redux";
 
 function UpdateVideoForm({
   setToaster,
@@ -18,6 +20,7 @@ function UpdateVideoForm({
   });
   const [videoLoaderLoading, setVideoLoaderLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   function handleDataChange(e) {
     const { name, value, files } = e.target;
@@ -53,10 +56,6 @@ function UpdateVideoForm({
     }
 
     updateVideo(data);
-
-    for (const [name, value] of data.entries()) {
-      console.log(name, value);
-    }
   }
 
   async function updateVideo(data) {
@@ -88,8 +87,6 @@ function UpdateVideoForm({
 
     setVideoLoaderLoading(false);
 
-    console.log(updatedVideo);
-
     if (updatedVideo?.status === "success") {
       setOpenVideoEditListId(false);
       setShowUpdateVideoForm((prevState) => ({ ...prevState, video: false }));
@@ -104,8 +101,6 @@ function UpdateVideoForm({
       logout();
       navigate("/login");
     } else if (updatedVideo.errorCode === "TOKEN_EXPIRED") {
-      console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -160,23 +155,23 @@ function UpdateVideoForm({
   }
 
   function logout() {
-        dispatch(
-        updateUserData({
-          userId: "",
-          email: "",
-          username: "",
-          avatar: "",
-          isLoggedIn: false,
-          createdChannel: false,
-          channel: {
-            channelId: "",
-          },
-        })
-      );
+    dispatch(
+      updateUserData({
+        userId: "",
+        email: "",
+        username: "",
+        avatar: "",
+        isLoggedIn: false,
+        createdChannel: false,
+        channel: {
+          channelId: "",
+        },
+      })
+    );
 
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("channelId");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("channelId");
   }
 
   return (

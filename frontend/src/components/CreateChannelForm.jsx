@@ -55,10 +55,14 @@ function CreateChannelForm({ setToaster, setShowForm }) {
     const token = localStorage.getItem("accessToken");
 
     if (!token) {
-      showToaster("Please login to perform this operation !", "text-white", setToaster);
+      showToaster(
+        "Please login to perform this operation !",
+        "text-white",
+        setToaster
+      );
       return;
     }
-    
+
     data.append("userId", userId);
 
     setChannelLoaderLoading(true);
@@ -72,8 +76,6 @@ function CreateChannelForm({ setToaster, setShowForm }) {
     });
 
     const channel = await res.json();
-
-    console.log(channel);
 
     if (channel.status === "success") {
       localStorage.setItem("channelId", channel.data._id);
@@ -99,8 +101,6 @@ function CreateChannelForm({ setToaster, setShowForm }) {
       logout();
       navigate("/login");
     } else if (channel.errorCode === "TOKEN_EXPIRED") {
-      console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -161,24 +161,24 @@ function CreateChannelForm({ setToaster, setShowForm }) {
     return false;
   }
 
- function logout() {
-        dispatch(
-        updateUserData({
-          userId: "",
-          email: "",
-          username: "",
-          avatar: "",
-          isLoggedIn: false,
-          createdChannel: false,
-          channel: {
-            channelId: "",
-          },
-        })
-      );
+  function logout() {
+    dispatch(
+      updateUserData({
+        userId: "",
+        email: "",
+        username: "",
+        avatar: "",
+        isLoggedIn: false,
+        createdChannel: false,
+        channel: {
+          channelId: "",
+        },
+      })
+    );
 
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("channelId");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("channelId");
   }
 
   return (

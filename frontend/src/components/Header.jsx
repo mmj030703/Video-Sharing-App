@@ -16,6 +16,7 @@ import errorHandler from "../utils/errorHandler";
 import { updateUserData } from "../utils/slices/userSlice";
 import CreateChannelForm from "./CreateChannelForm";
 import UploadVideoForm from "./UploadVideoForm";
+import showToaster from "../utils/showToaster";
 
 function Header() {
   const [searchInput, setSearchInput] = useState("");
@@ -46,7 +47,11 @@ function Header() {
     const token = localStorage.getItem("accessToken");
 
     if (!token) {
-      showToaster("Please login to perform this operation !", "text-white", setToaster);
+      showToaster(
+        "Please login to perform this operation !",
+        "text-white",
+        setToaster
+      );
       return;
     }
 
@@ -59,11 +64,8 @@ function Header() {
     });
 
     const resJson = await res.json();
-    console.log(resJson);
 
     if (resJson?.status === "success") {
-      console.log("success");
-
       dispatch(
         updateUserData({
           userId: "",
@@ -85,8 +87,6 @@ function Header() {
       logout();
       navigate("/login");
     } else if (resJson.errorCode === "TOKEN_EXPIRED") {
-      console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -110,27 +110,25 @@ function Header() {
     }
   }
 
-   function logout() {
-        dispatch(
-        updateUserData({
-          userId: "",
-          email: "",
-          username: "",
-          avatar: "",
-          isLoggedIn: false,
-          createdChannel: false,
-          channel: {
-            channelId: "",
-          },
-        })
-      );
+  function logout() {
+    dispatch(
+      updateUserData({
+        userId: "",
+        email: "",
+        username: "",
+        avatar: "",
+        isLoggedIn: false,
+        createdChannel: false,
+        channel: {
+          channelId: "",
+        },
+      })
+    );
 
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("channelId");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("channelId");
   }
-
-  // console.log(user, user.isLoggedIn);
 
   return (
     <>
@@ -147,7 +145,9 @@ function Header() {
               className="text-[1.4rem] min-[300px]:text-[1.7rem] min-[450px]:text-[2rem] text-red-500"
               icon={faCirclePlay}
             />
-            <p className="text-[1.4rem] min-[300px]:text-[1.7rem] min-[450px]:text-[2rem] font-bold text-white">Vidionix</p>
+            <p className="text-[1.4rem] min-[300px]:text-[1.7rem] min-[450px]:text-[2rem] font-bold text-white">
+              Vidionix
+            </p>
           </Link>
         </article>
         {/* Search Bar & Icons */}
@@ -192,7 +192,10 @@ function Header() {
             <article
               onClick={() => setOpenAccountNavList((prevState) => !prevState)}
               className="flex items-center gap-x-3 hover:bg-slate-600 hover:rounded-sm hover:transition-all py-1 px-2 cursor-pointer">
-              <img src={`${user.avatar}`} className="w-10 min-[450[px]:w-12 rounded-full" />
+              <img
+                src={`${user.avatar}`}
+                className="w-10 min-[450[px]:w-12 rounded-full"
+              />
               <FontAwesomeIcon
                 icon={faCaretDown}
                 className="text-[1.3rem] min-[450px]:text-[1.6rem] mt-1 text-white"

@@ -3,6 +3,8 @@ import { useState } from "react";
 import showToaster from "../utils/showToaster";
 import errorHandler from "../utils/errorHandler";
 import { useNavigate } from "react-router-dom";
+import { updateUserData } from "../utils/slices/userSlice";
+import { useDispatch } from "react-redux";
 
 function UpdateChannelForm({
   setToaster,
@@ -18,6 +20,7 @@ function UpdateChannelForm({
   });
   const [channelLoaderLoading, setChannelLoaderLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   function handleDataChange(e) {
     const { name, value, files } = e.target;
@@ -54,10 +57,6 @@ function UpdateChannelForm({
     }
 
     updateChannel(data);
-
-    for (const [name, value] of data.entries()) {
-      console.log(name, value);
-    }
   }
 
   async function updateChannel(data) {
@@ -89,8 +88,6 @@ function UpdateChannelForm({
 
     setChannelLoaderLoading(false);
 
-    console.log(updatedChannel);
-
     if (updatedChannel?.status === "success") {
       setShowUpdateChannelForm((prevState) => ({
         ...prevState,
@@ -107,8 +104,6 @@ function UpdateChannelForm({
       logout();
       navigate("/login");
     } else if (updatedChannel.errorCode === "TOKEN_EXPIRED") {
-      console.log("failed");
-
       const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
       const resJson = await res.json();
 
@@ -140,7 +135,6 @@ function UpdateChannelForm({
     }
 
     if (data.title.trim() === "") {
-      console.log("empty");
       showToaster("Title cannot be empty !", "text-red-400", setToaster);
       return true;
     }
@@ -174,30 +168,32 @@ function UpdateChannelForm({
   }
 
   function logout() {
-        dispatch(
-        updateUserData({
-          userId: "",
-          email: "",
-          username: "",
-          avatar: "",
-          isLoggedIn: false,
-          createdChannel: false,
-          channel: {
-            channelId: "",
-          },
-        })
-      );
+    dispatch(
+      updateUserData({
+        userId: "",
+        email: "",
+        username: "",
+        avatar: "",
+        isLoggedIn: false,
+        createdChannel: false,
+        channel: {
+          channelId: "",
+        },
+      })
+    );
 
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("channelId");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("channelId");
   }
 
   return (
     <section className="cursor-not-allowed fixed z-50 top-0 left-0 px-4 min-h-screen w-screen flex flex-col justify-center items-center">
       <section className="cursor-pointer bg-slate-700 max-[599px]:w-full p-3 min-[600px]:p-5 rounded-md shadow-2xl">
         <header>
-          <h1 className="text-white text-3xl font-semibold max-[600px]:text-center">Update Channel</h1>
+          <h1 className="text-white text-3xl font-semibold max-[600px]:text-center">
+            Update Channel
+          </h1>
         </header>
         <form
           onSubmit={handleChannelUpdate}

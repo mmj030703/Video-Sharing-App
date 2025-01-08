@@ -5,7 +5,7 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomePage from "./pages/Homepage.jsx";
 import LoginPage from "./pages/Loginpage.jsx";
-import RegisterPage from "./pages/RegisterPage.jsx";
+import RegisterPage from "./pages/Registerpage.jsx";
 import VideoPlayerPage from "./pages/VideoPlayerpage.jsx";
 import ChannelPage from "./pages/Channelpage.jsx";
 import SearchPage from "./pages/Searchpage.jsx";
