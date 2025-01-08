@@ -9,11 +9,14 @@ function Sidebar() {
     (store) => store.sidebarSlice.sidebarOpened
   );
   const user = useSelector((store) => store.userSlice.user);
-
   const dispatch = useDispatch();
 
+  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
+
   async function fetchHomepageVideos(category) {
-    const res = await fetch(`/api/v1/videos/category/${category}`);
+    const res = await fetch(
+      `${VITE_BACKEND_API_URI}/api/v1/videos/category/${category}`
+    );
     const homepageVideos = await res.json();
 
     dispatch(addHomepageVideos(homepageVideos?.data?.videos));
@@ -48,21 +51,19 @@ function Sidebar() {
           Categories
         </p>
         <section className="flex flex-col gap-y-3 w-full mt-2">
-          {categories.length ?
-            categories.map((category) => {
-              return (
-                <button
-                  onClick={() => fetchHomepageVideos(category._id)}
-                  key={category._id}
-                  className="font-semibold text-[1.1rem] text-white py-[8px] px-4 cursor-pointer bg-slate-600 rounded-sm">
-                  {category.name.slice(0, 1).toUpperCase() +
-                    category.name.slice(1)}
-                </button>
-              );
-            })
-            :
-            null
-          }
+          {categories.length
+            ? categories.map((category) => {
+                return (
+                  <button
+                    onClick={() => fetchHomepageVideos(category._id)}
+                    key={category._id}
+                    className="font-semibold text-[1.1rem] text-white py-[8px] px-4 cursor-pointer bg-slate-600 rounded-sm">
+                    {category.name.slice(0, 1).toUpperCase() +
+                      category.name.slice(1)}
+                  </button>
+                );
+              })
+            : null}
         </section>
       </section>
       <Footer />

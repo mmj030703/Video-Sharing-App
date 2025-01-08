@@ -18,6 +18,8 @@ function UpdateCommentForm({
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
+
   function handleCommentUpdate(e) {
     e?.preventDefault();
 
@@ -44,22 +46,27 @@ function UpdateCommentForm({
       return;
     }
 
-    const res = await fetch(`/api/v1/comments/update/${comment._id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        message,
-        userId,
-      }),
-    });
+    const res = await fetch(
+      `${VITE_BACKEND_API_URI}/api/v1/comments/update/${comment._id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          message,
+          userId,
+        }),
+      }
+    );
 
     const updatedComment = await res.json();
 
     if (updatedComment.status === "success") {
-      const commentsRes = await fetch(`/api/v1/comments/all/${comment.video}`);
+      const commentsRes = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/comments/all/${comment.video}`
+      );
       const comments = await commentsRes.json();
 
       setCommentLoaderLoading(false);
@@ -80,7 +87,9 @@ function UpdateCommentForm({
       logout();
       navigate("/login");
     } else if (updatedComment.errorCode === "TOKEN_EXPIRED") {
-      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const res = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+      );
       const resJson = await res.json();
 
       if (resJson?.status === "success") {

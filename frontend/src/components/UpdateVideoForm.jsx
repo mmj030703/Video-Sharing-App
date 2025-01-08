@@ -22,6 +22,8 @@ function UpdateVideoForm({
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
+
   function handleDataChange(e) {
     const { name, value, files } = e.target;
 
@@ -75,13 +77,16 @@ function UpdateVideoForm({
 
     setVideoLoaderLoading(true);
 
-    const res = await fetch(`/api/v1/channels/videos/update/${video?._id}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: data,
-    });
+    const res = await fetch(
+      `${VITE_BACKEND_API_URI}/api/v1/channels/videos/update/${video?._id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: data,
+      }
+    );
 
     const updatedVideo = await res.json();
 
@@ -101,7 +106,9 @@ function UpdateVideoForm({
       logout();
       navigate("/login");
     } else if (updatedVideo.errorCode === "TOKEN_EXPIRED") {
-      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const res = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+      );
       const resJson = await res.json();
 
       if (resJson?.status === "success") {

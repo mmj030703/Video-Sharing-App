@@ -30,14 +30,16 @@ function ChannelPage() {
   });
   const navigate = useNavigate();
 
+  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
+
   useEffect(() => {
     fetchChannelById(id);
   }, [id, channelUpdated]);
 
   async function fetchChannelById(id) {
     const [channelRes, channelVideosRes] = await Promise.all([
-      fetch(`/api/v1/channels/channel/${id}`),
-      fetch(`/api/v1/videos/channel/${id}`),
+      fetch(`${VITE_BACKEND_API_URI}/api/v1/channels/channel/${id}`),
+      fetch(`${VITE_BACKEND_API_URI}/api/v1/videos/channel/${id}`),
     ]);
 
     const [channel, channelVideos] = await Promise.all([
@@ -87,16 +89,19 @@ function ChannelPage() {
 
       showToaster("Video getting deleted !", "text-white", setToaster);
 
-      const res = await fetch(`/api/v1/channels/videos/delete/${videoId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userId,
-        }),
-      });
+      const res = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/channels/videos/delete/${videoId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userId,
+          }),
+        }
+      );
 
       const deletedVideo = await res.json();
 
@@ -111,7 +116,9 @@ function ChannelPage() {
       } else if (deletedVideo.errorCode === "INVALID_TOKEN") {
         navigate("/login");
       } else if (deletedVideo.errorCode === "TOKEN_EXPIRED") {
-        const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+        const res = await fetch(
+          `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+        );
         const resJson = await res.json();
 
         if (resJson?.status === "success") {

@@ -41,6 +41,8 @@ function VideoPlayerPage() {
     disliked: false,
   });
 
+  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
+
   const months = {
     0: "Jan",
     1: "Feb",
@@ -77,7 +79,7 @@ function VideoPlayerPage() {
     }
 
     const likeDislikeUserStatusRes = await fetch(
-      `/api/v1/likes-dislikes/user-status/${id}`,
+      `${VITE_BACKEND_API_URI}/api/v1/likes-dislikes/user-status/${id}`,
       {
         method: "POST",
         headers: {
@@ -109,7 +111,9 @@ function VideoPlayerPage() {
       logout();
       navigate("/login");
     } else if (likeDislikeUserStatus.errorCode === "TOKEN_EXPIRED") {
-      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const res = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+      );
       const resJson = await res.json();
 
       if (resJson?.status === "success") {
@@ -135,8 +139,8 @@ function VideoPlayerPage() {
 
   async function fetchData() {
     const [videoRes, commentsRes] = await Promise.all([
-      fetch(`/api/v1/videos/video/${id}`),
-      fetch(`/api/v1/comments/all/${id}`),
+      fetch(`${VITE_BACKEND_API_URI}/api/v1/videos/video/${id}`),
+      fetch(`${VITE_BACKEND_API_URI}/api/v1/comments/all/${id}`),
     ]);
 
     const [video, comments] = await Promise.all([
@@ -161,7 +165,7 @@ function VideoPlayerPage() {
     }
 
     const recommendedVideosRes = await fetch(
-      `/api/v1/videos/category/${video.data.video.categories[0]._id}`
+      `${VITE_BACKEND_API_URI}/api/v1/videos/category/${video.data.video.categories[0]._id}`
     );
     const recommendedVideos = await recommendedVideosRes.json();
 
@@ -198,22 +202,27 @@ function VideoPlayerPage() {
 
     setCommentLoaderLoading(true);
 
-    const res = await fetch(`/api/v1/comments/add/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        userId,
-        message,
-      }),
-    });
+    const res = await fetch(
+      `${VITE_BACKEND_API_URI}/api/v1/comments/add/${id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId,
+          message,
+        }),
+      }
+    );
 
     const comment = await res.json();
 
     if (comment?.status === "success") {
-      const commentsRes = await fetch(`/api/v1/comments/all/${id}`);
+      const commentsRes = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/comments/all/${id}`
+      );
       const comments = await commentsRes.json();
 
       setCommentLoaderLoading(false);
@@ -239,7 +248,9 @@ function VideoPlayerPage() {
       logout();
       navigate("/login");
     } else if (comment.errorCode === "TOKEN_EXPIRED") {
-      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const res = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+      );
       const resJson = await res.json();
 
       if (resJson?.status === "success") {
@@ -286,21 +297,26 @@ function VideoPlayerPage() {
       return;
     }
 
-    const res = await fetch(`/api/v1/comments/delete/${commentId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        userId,
-      }),
-    });
+    const res = await fetch(
+      `${VITE_BACKEND_API_URI}/api/v1/comments/delete/${commentId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId,
+        }),
+      }
+    );
 
     const deletedComment = await res.json();
 
     if (deletedComment.status === "success") {
-      const commentsRes = await fetch(`/api/v1/comments/all/${id}`);
+      const commentsRes = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/comments/all/${id}`
+      );
       const comments = await commentsRes.json();
 
       if (comments.status === "success") {
@@ -318,7 +334,9 @@ function VideoPlayerPage() {
       logout();
       navigate("/login");
     } else if (deletedComment.errorCode === "TOKEN_EXPIRED") {
-      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const res = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+      );
       const resJson = await res.json();
 
       if (resJson?.status === "success") {
@@ -357,7 +375,7 @@ function VideoPlayerPage() {
     }
 
     const res = await fetch(
-      `/api/v1/likes-dislikes/update-likes-dislikes/${id}`,
+      `${VITE_BACKEND_API_URI}/api/v1/likes-dislikes/update-likes-dislikes/${id}`,
       {
         method: "POST",
         headers: {
@@ -405,7 +423,9 @@ function VideoPlayerPage() {
       logout();
       navigate("/login");
     } else if (resJson.errorCode === "TOKEN_EXPIRED") {
-      const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+      const res = await fetch(
+        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+      );
       const resJson = await res.json();
 
       if (resJson?.status === "success") {

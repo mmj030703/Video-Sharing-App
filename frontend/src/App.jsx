@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { addCategories } from "./utils/slices/appSlice.js";
 import { updateUserData } from "./utils/slices/userSlice.js";
 import Toaster from "./components/Toaster.jsx";
-import showToaster from "./utils/showToaster.js";
 
 function AppBody() {
   const dispatch = useDispatch();
@@ -19,6 +18,8 @@ function AppBody() {
     toasterMessage: "",
     toasterTailwindTextColorClass: "",
   });
+
+  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
 
   useEffect(() => {
     setToaster({
@@ -69,7 +70,9 @@ function AppBody() {
       } else if (data.errorCode === "INVALID_TOKEN") {
         navigate("/login");
       } else if (data.errorCode === "TOKEN_EXPIRED") {
-        const res = await fetch(`/api/v1/users/refresh-token/${userId}`);
+        const res = await fetch(
+          `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+        );
         const resJson = await res.json();
 
         if (resJson?.status === "success") {
@@ -93,18 +96,23 @@ function AppBody() {
     const channelId = localStorage.getItem("channelId");
 
     if (userId) {
-      fetchData(`/api/v1/users/user/${userId}`, "user");
+      fetchData(`${VITE_BACKEND_API_URI}/api/v1/users/user/${userId}`, "user");
     }
 
     if (channelId) {
-      fetchData(`/api/v1/channels/channel/${channelId}`, "channel");
+      fetchData(
+        `${VITE_BACKEND_API_URI}/api/v1/channels/channel/${channelId}`,
+        "channel"
+      );
     }
   }, [token]);
 
   useEffect(() => {
     // Fetch categories
     if (categories.length === 0) {
-      fetchData("/api/v1/categories/videos/all?associatedWith=video");
+      fetchData(
+        "${VITE_BACKEND_API_URI}/api/v1/categories/videos/all?associatedWith=video"
+      );
     }
   }, []);
 
