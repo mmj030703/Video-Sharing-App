@@ -6,7 +6,10 @@ const app = express();
 
 // Configure CORS
 const corsOptions = {
-    origin: "https://vidionix.vercel.app",
+    origin: [
+        "https://vidionix.vercel.app",
+        "http://localhost:5173"
+    ],
     methods: ["GET", "POST", "PATCH", "DELETE"],
 };
 
