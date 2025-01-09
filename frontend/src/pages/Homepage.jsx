@@ -11,8 +11,6 @@ function HomePage() {
   );
   const dispatch = useDispatch();
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   useEffect(() => {
     // On first render, rendering all videos in homepage
     fetchHomepageVideos("all");
@@ -20,7 +18,7 @@ function HomePage() {
 
   async function fetchHomepageVideos(category) {
     const res = await fetch(
-      `${VITE_BACKEND_API_URI}/api/v1/videos/category/${category}`
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/videos/category/${category}`
     );
     const homepageVideos = await res.json();
 

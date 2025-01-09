@@ -21,8 +21,6 @@ function RegisterPage() {
   const [registerLoading, setRegisterLoading] = useState(false);
   const navigate = useNavigate();
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   function handleDataChange(e) {
     const { name, value, files } = e.target;
 
@@ -52,10 +50,13 @@ function RegisterPage() {
   async function registerUser(data) {
     setRegisterLoading(true);
 
-    const res = await fetch(`${VITE_BACKEND_API_URI}/api/v1/users/register`, {
-      method: "POST",
-      body: data,
-    });
+    const res = await fetch(
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/users/register`,
+      {
+        method: "POST",
+        body: data,
+      }
+    );
 
     const userData = await res.json();
     setRegisterLoading(false);

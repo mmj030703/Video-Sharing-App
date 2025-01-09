@@ -32,8 +32,6 @@ function Header() {
   const [showChannelCreateForm, setShowChannelCreateForm] = useState(false);
   const [showVideoUploadForm, setShowVideoUploadForm] = useState(false);
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   function handleSidebar() {
     dispatch(toggleSidebar());
   }
@@ -58,7 +56,7 @@ function Header() {
     }
 
     const res = await fetch(
-      `${VITE_BACKEND_API_URI}/api/v1/users/logout/${userId}`,
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/users/logout/${userId}`,
       {
         method: "POST",
         headers: {
@@ -93,7 +91,7 @@ function Header() {
       navigate("/login");
     } else if (resJson.errorCode === "TOKEN_EXPIRED") {
       const res = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/users/refresh-token/${userId}`
       );
       const resJson = await res.json();
 

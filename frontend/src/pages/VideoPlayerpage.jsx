@@ -41,8 +41,6 @@ function VideoPlayerPage() {
     disliked: false,
   });
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   const months = {
     0: "Jan",
     1: "Feb",
@@ -79,7 +77,7 @@ function VideoPlayerPage() {
     }
 
     const likeDislikeUserStatusRes = await fetch(
-      `${VITE_BACKEND_API_URI}/api/v1/likes-dislikes/user-status/${id}`,
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/likes-dislikes/user-status/${id}`,
       {
         method: "POST",
         headers: {
@@ -112,7 +110,7 @@ function VideoPlayerPage() {
       navigate("/login");
     } else if (likeDislikeUserStatus.errorCode === "TOKEN_EXPIRED") {
       const res = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/users/refresh-token/${userId}`
       );
       const resJson = await res.json();
 
@@ -139,8 +137,12 @@ function VideoPlayerPage() {
 
   async function fetchData() {
     const [videoRes, commentsRes] = await Promise.all([
-      fetch(`${VITE_BACKEND_API_URI}/api/v1/videos/video/${id}`),
-      fetch(`${VITE_BACKEND_API_URI}/api/v1/comments/all/${id}`),
+      fetch(
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/videos/video/${id}`
+      ),
+      fetch(
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/comments/all/${id}`
+      ),
     ]);
 
     const [video, comments] = await Promise.all([
@@ -165,7 +167,7 @@ function VideoPlayerPage() {
     }
 
     const recommendedVideosRes = await fetch(
-      `${VITE_BACKEND_API_URI}/api/v1/videos/category/${video.data.video.categories[0]._id}`
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/videos/category/${video.data.video.categories[0]._id}`
     );
     const recommendedVideos = await recommendedVideosRes.json();
 
@@ -203,7 +205,7 @@ function VideoPlayerPage() {
     setCommentLoaderLoading(true);
 
     const res = await fetch(
-      `${VITE_BACKEND_API_URI}/api/v1/comments/add/${id}`,
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/comments/add/${id}`,
       {
         method: "POST",
         headers: {
@@ -221,7 +223,7 @@ function VideoPlayerPage() {
 
     if (comment?.status === "success") {
       const commentsRes = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/comments/all/${id}`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/comments/all/${id}`
       );
       const comments = await commentsRes.json();
 
@@ -249,7 +251,7 @@ function VideoPlayerPage() {
       navigate("/login");
     } else if (comment.errorCode === "TOKEN_EXPIRED") {
       const res = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/users/refresh-token/${userId}`
       );
       const resJson = await res.json();
 
@@ -298,7 +300,7 @@ function VideoPlayerPage() {
     }
 
     const res = await fetch(
-      `${VITE_BACKEND_API_URI}/api/v1/comments/delete/${commentId}`,
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/comments/delete/${commentId}`,
       {
         method: "DELETE",
         headers: {
@@ -315,7 +317,7 @@ function VideoPlayerPage() {
 
     if (deletedComment.status === "success") {
       const commentsRes = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/comments/all/${id}`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/comments/all/${id}`
       );
       const comments = await commentsRes.json();
 
@@ -335,7 +337,7 @@ function VideoPlayerPage() {
       navigate("/login");
     } else if (deletedComment.errorCode === "TOKEN_EXPIRED") {
       const res = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/users/refresh-token/${userId}`
       );
       const resJson = await res.json();
 
@@ -375,7 +377,7 @@ function VideoPlayerPage() {
     }
 
     const res = await fetch(
-      `${VITE_BACKEND_API_URI}/api/v1/likes-dislikes/update-likes-dislikes/${id}`,
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/likes-dislikes/update-likes-dislikes/${id}`,
       {
         method: "POST",
         headers: {
@@ -424,7 +426,7 @@ function VideoPlayerPage() {
       navigate("/login");
     } else if (resJson.errorCode === "TOKEN_EXPIRED") {
       const res = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/users/refresh-token/${userId}`
       );
       const resJson = await res.json();
 

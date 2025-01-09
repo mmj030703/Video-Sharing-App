@@ -19,8 +19,6 @@ function AppBody() {
     toasterTailwindTextColorClass: "",
   });
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   useEffect(() => {
     setToaster({
       showToaster: true,
@@ -71,7 +69,7 @@ function AppBody() {
         navigate("/login");
       } else if (data.errorCode === "TOKEN_EXPIRED") {
         const res = await fetch(
-          `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+          `https://video-sharing-app-2n9p.onrender.com/api/v1/users/refresh-token/${userId}`
         );
         const resJson = await res.json();
 
@@ -96,12 +94,15 @@ function AppBody() {
     const channelId = localStorage.getItem("channelId");
 
     if (userId) {
-      fetchData(`${VITE_BACKEND_API_URI}/api/v1/users/user/${userId}`, "user");
+      fetchData(
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/users/user/${userId}`,
+        "user"
+      );
     }
 
     if (channelId) {
       fetchData(
-        `${VITE_BACKEND_API_URI}/api/v1/channels/channel/${channelId}`,
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/channels/channel/${channelId}`,
         "channel"
       );
     }
@@ -111,7 +112,7 @@ function AppBody() {
     // Fetch categories
     if (categories.length === 0) {
       fetchData(
-        "${VITE_BACKEND_API_URI}/api/v1/categories/videos/all?associatedWith=video"
+        "https://video-sharing-app-2n9p.onrender.com/api/v1/categories/videos/all?associatedWith=video"
       );
     }
   }, []);

@@ -18,8 +18,6 @@ function CreateChannelForm({ setToaster, setShowForm }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   function handleDataChange(e) {
     const { name, value, files } = e.target;
     let newState = {};
@@ -69,13 +67,16 @@ function CreateChannelForm({ setToaster, setShowForm }) {
 
     setChannelLoaderLoading(true);
 
-    const res = await fetch(`${VITE_BACKEND_API_URI}/api/v1/channels/create`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: data,
-    });
+    const res = await fetch(
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/channels/create`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: data,
+      }
+    );
 
     const channel = await res.json();
 
@@ -104,7 +105,7 @@ function CreateChannelForm({ setToaster, setShowForm }) {
       navigate("/login");
     } else if (channel.errorCode === "TOKEN_EXPIRED") {
       const res = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/users/refresh-token/${userId}`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/users/refresh-token/${userId}`
       );
       const resJson = await res.json();
 

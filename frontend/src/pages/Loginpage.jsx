@@ -24,8 +24,6 @@ function LoginComponent() {
   const navigate = useNavigate();
   const user = useSelector((store) => store.userSlice.user);
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   if (user.isLoggedIn) {
     showToaster("Already logged in !", "text-white", setToaster);
     navigate("/");
@@ -52,13 +50,16 @@ function LoginComponent() {
   async function loginUser(data) {
     setLoginLoading(true);
 
-    const res = await fetch(`${VITE_BACKEND_API_URI}/api/v1/users/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    const res = await fetch(
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/users/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
 
     const userData = await res.json();
     setLoginLoading(false);

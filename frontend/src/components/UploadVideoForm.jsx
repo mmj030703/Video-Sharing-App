@@ -17,12 +17,10 @@ function UploadVideoForm({ setToaster, setShowForm }) {
   const [videoLoaderLoading, setVideoLoaderLoading] = useState(false);
   const dispatch = useDispatch();
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   useEffect(() => {
     async function fetchCategories() {
       const res = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/categories/videos/all?associatedWith=video`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/categories/videos/all?associatedWith=video`
       );
       const resJson = await res.json();
 
@@ -92,7 +90,7 @@ function UploadVideoForm({ setToaster, setShowForm }) {
     );
 
     const res = await fetch(
-      `${VITE_BACKEND_API_URI}/api/v1/channels/videos/upload`,
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/channels/videos/upload`,
       {
         method: "POST",
         body: data,
@@ -111,7 +109,7 @@ function UploadVideoForm({ setToaster, setShowForm }) {
       );
 
       const res = await fetch(
-        `${VITE_BACKEND_API_URI}/api/v1/videos/category/all`
+        `https://video-sharing-app-2n9p.onrender.com/api/v1/videos/category/all`
       );
       const homepageVideos = await res.json();
 

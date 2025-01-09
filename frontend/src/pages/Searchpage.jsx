@@ -10,8 +10,6 @@ function SearchPage() {
   const [searchParams] = useSearchParams();
   const title = searchParams.get("q");
 
-  const VITE_BACKEND_API_URI = import.meta.env.VITE_BACKEND_API_URI;
-
   useEffect(() => {
     if (title === "") return;
 
@@ -21,7 +19,7 @@ function SearchPage() {
 
   async function fetchSearchVideos(title) {
     const res = await fetch(
-      `${VITE_BACKEND_API_URI}/videos/search/title?query=${title}`
+      `https://video-sharing-app-2n9p.onrender.com/videos/search/title?query=${title}`
     );
     const searchVideos = await res.json();
 
