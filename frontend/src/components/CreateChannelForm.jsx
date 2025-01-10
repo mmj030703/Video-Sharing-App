@@ -47,7 +47,7 @@ function CreateChannelForm({ setToaster, setShowForm }) {
       data.append(name, value);
     });
 
-    // createChannelFetch(data);
+    createChannelFetch(data);
   }
 
   async function createChannelFetch(data) {
@@ -187,7 +187,7 @@ function CreateChannelForm({ setToaster, setShowForm }) {
   }
 
   return (
-    <section className="cursor-not-allowed fixed z-50 top-0 px-4 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
+    <section className="cursor-not-allowed fixed z-40 top-0 px-4 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
       <section className="cursor-pointer max-[599px]:w-full bg-slate-700 p-5 rounded-md shadow-2xl">
         <header>
           <h1 className="text-white text-3xl font-semibold">Create Channel</h1>
