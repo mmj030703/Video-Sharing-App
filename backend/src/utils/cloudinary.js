@@ -15,10 +15,6 @@ export async function uploadToCloudinary(fileLocalPath) {
         const uploadResult = await cloudinary.uploader.upload(fileLocalPath, {
             resource_type: 'auto',
             folder: "uploads/vidionix", // Organize files under 'uploads' folder in Cloudinary
-            transformation: [
-                { quality: "auto:good" },    // Optimize quality automatically
-                { fetch_format: "auto" },    // Deliver in an optimal format (e.g., WebP, AVIF)
-            ],
             use_filename: true,             // Use the original file name
             unique_filename: false,         // Prevent random renaming
             video_codec: 'auto',       // Let Cloudinary automatically choose the best video codec

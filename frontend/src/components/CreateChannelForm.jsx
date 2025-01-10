@@ -47,7 +47,7 @@ function CreateChannelForm({ setToaster, setShowForm }) {
       data.append(name, value);
     });
 
-    createChannelFetch(data);
+    // createChannelFetch(data);
   }
 
   async function createChannelFetch(data) {

@@ -277,7 +277,7 @@ function ChannelPage() {
                           }}
                         />
                         <ul
-                          className={`z-50 absolute top-5 right-7 ${
+                          className={`z-40 absolute top-5 right-7 ${
                             openVideoEditListId !== video?._id ? "hidden" : ""
                           } bg-slate-500 top-0 rounded-md`}>
                           <li

@@ -84,9 +84,10 @@ function UploadVideoForm({ setToaster, setShowForm }) {
     setVideoLoaderLoading(true);
 
     showToaster(
-      "Keep patience it will take a while to upload video !",
+      "Uploading your video! This may take 1-2 minutes ! Keep patience",
       "text-white",
-      setToaster
+      setToaster,
+      5000
     );
 
     const res = await fetch(
@@ -96,6 +97,16 @@ function UploadVideoForm({ setToaster, setShowForm }) {
         body: data,
       }
     );
+
+    if (!res) {
+      setVideoLoaderLoading(false);
+
+      showToaster(
+        "An error occured while uploading video ! Please try again.",
+        "text-red",
+        setToaster
+      );
+    }
 
     const video = await res.json();
 

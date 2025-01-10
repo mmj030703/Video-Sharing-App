@@ -72,7 +72,6 @@ function UpdateCommentForm({
       if (comments.status === "success") {
         setComments(comments.data.comments);
         setShowUpdateCommentForm(false);
-        setOpenCommentEditListId(null);
 
         showToaster(
           "Comment Updated succesfully !",
@@ -133,7 +132,7 @@ function UpdateCommentForm({
   }
 
   return (
-    <section className="cursor-not-allowed fixed px-4 z-50 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
+    <section className="cursor-not-allowed fixed px-4 z-40 -top-5 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
       <section className="cursor-pointer max-[449px]:w-full bg-slate-700 p-5 rounded-md shadow-2xl">
         <header>
           <h1 className="text-white text-3xl font-semibold">Update Comment</h1>

@@ -1,4 +1,4 @@
-function showToaster(text, tailwindClass, toastElementHandler) {
+function showToaster(text, tailwindClass, toastElementHandler, showTime = 2000) {
     toastElementHandler({
         showToaster: true,
         toasterMessage: text,
@@ -11,7 +11,7 @@ function showToaster(text, tailwindClass, toastElementHandler) {
             toasterMessage: "",
             toasterTailwindTextColorClass: "",
         });
-    }, 2000);
+    }, showTime);
 }
 
 export default showToaster;

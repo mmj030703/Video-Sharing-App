@@ -43,8 +43,6 @@ function UpdateVideoForm({
   function handleVideoUpdate(e) {
     e?.preventDefault();
 
-    setVideoLoaderLoading(true);
-
     const error = validateFormData(formData);
     if (error) return;
 
@@ -180,7 +178,7 @@ function UpdateVideoForm({
   }
 
   return (
-    <section className="cursor-not-allowed fixed z-50 px-4 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
+    <section className="cursor-not-allowed fixed z-40 px-4 top-0 left-0 min-h-screen w-screen flex flex-col justify-center items-center">
       <section className="cursor-pointer max-[599px]:w-full bg-slate-700 p-5 rounded-md shadow-2xl">
         <header>
           <h1 className="text-white text-3xl font-semibold">Update Video</h1>

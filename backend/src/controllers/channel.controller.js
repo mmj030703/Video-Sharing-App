@@ -113,9 +113,6 @@ export async function createChannel(req, res, next) {
                 uploadToCloudinary(avatarPath)
             ]);
 
-            coverImageUrl = getOptimizedUrl(coverImage.public_id, coverImage.resource_type, 720, 405);
-            avatarUrl = getOptimizedUrl(avatar.public_id, avatar.resource_type, 512, 512);
-
         } catch (error) {
             console.log("Cloudinary Channel Images Upload Error: ", error.message || error);
             return res.status(500).json({ error: error.message || error, errorCode: "CREATE_CHANNEL_ERROR", message: "Cloudinary Channel Images Upload Error:: Internal Server Error !" });
@@ -126,10 +123,10 @@ export async function createChannel(req, res, next) {
             handle,
             title,
             description,
-            coverImage: coverImageUrl,
-            avatar: avatarUrl,
-            coverImagePublicId: coverImage.public_id,
-            avatarPublicId: avatar.public_id
+            coverImage: coverImage ? coverImage.secure_url : existingChannel.coverImage,
+            avatar: avatar ? avatar.secure_url : existingChannel.coverImage,
+            coverImagePublicId: coverImage ? coverImage.public_id : existingChannel.coverImagePublicId,
+            avatarPublicId: avatar ? avatar.public_id : existingChannel.avatarPublicId
         });
 
         if (!channel) {
@@ -203,8 +200,6 @@ export async function updateChannelById(req, res, next) {
 
         let coverImage = null;
         let avatar = null;
-        let coverImageUrl = null;
-        let avatarUrl = null;
 
         if (req.files && Object.keys(req.files).length > 0) {
             try {
@@ -226,19 +221,14 @@ export async function updateChannelById(req, res, next) {
                         uploadToCloudinary(req.files[Object.keys(req.files)[1]][0].path)
                     ]);
 
-                    coverImageUrl = getOptimizedUrl(coverImage.public_id, coverImage.resource_type, COVER_IMAGE_DIMENSIONS.width, COVER_IMAGE_DIMENSIONS.height) || coverImage.secure_url;
-                    avatarUrl = getOptimizedUrl(avatar.public_id, avatar.resource_type, AVATAR_DIMENSIONS.width, AVATAR_DIMENSIONS.height) || avatar.secure_url;
-
                 } else if (Object.keys(req.files)[0] === "avatar") {
                     await deleteMultipleMedia([channel.avatarPublicId]);
 
                     avatar = await uploadToCloudinary(req.files[Object.keys(req.files)[0]][0].path);
-                    avatarUrl = getOptimizedUrl(avatar.public_id, avatar.resource_type, AVATAR_DIMENSIONS.width, AVATAR_DIMENSIONS.height) || avatar.secure_url;
                 } else if (Object.keys(req.files)[0] === "coverImage") {
                     await deleteMultipleMedia([channel.coverImagePublicId]);
 
                     coverImage = await uploadToCloudinary(req.files[Object.keys(req.files)[0]][0].path);
-                    coverImageUrl = getOptimizedUrl(coverImage.public_id, coverImage.resource_type, COVER_IMAGE_DIMENSIONS.width, COVER_IMAGE_DIMENSIONS.height) || coverImage.secure_url;
                 }
             } catch (error) {
                 console.log("Cloudinary Channel Images Updation Error: ", error.message || error);
@@ -251,12 +241,12 @@ export async function updateChannelById(req, res, next) {
         if (description) channel.description = description;
 
         if (coverImage) {
-            channel.coverImage = coverImageUrl;
+            channel.coverImage = coverImage.secure_url;
             channel.coverImagePublicId = coverImage.public_id;
         }
 
         if (avatar) {
-            channel.avatar = avatarUrl;
+            channel.avatar = avatar.secure_url;
             channel.avatarPublicId = avatar.public_id;
         }
 
@@ -369,10 +359,6 @@ export async function uploadVideo(req, res, next) {
                 uploadToCloudinary(videoPath),
                 uploadToCloudinary(thumbnailPath)
             ]);
-
-
-            optimisedVideoUrl = getOptimizedUrl(video.public_id, video.resource_type, VIDEO_DIMENSIONS.width, VIDEO_DIMENSIONS.height) || video.secure_url;
-            optimisedThumbnailUrl = getOptimizedUrl(thumbnail.public_id, thumbnail.resource_type, THUMBNAIL_DIMENSIONS.width, THUMBNAIL_DIMENSIONS.height) || thumbnail.secure_url;
         } catch (error) {
             console.log("Cloudinary Video & thumbnail upload error: ", error.message || error);
             return res.status(400).json({ error: error.message || error, errorCode: "VIDEO_UPLOAD_ERROR", message: "Cloudinary Video & thumbnail upload:: Internal Server Error" });
@@ -382,12 +368,12 @@ export async function uploadVideo(req, res, next) {
             channel: channelId,
             title,
             description,
-            videoUrl: optimisedVideoUrl,
+            videoUrl: video.secure_url,
             videoPublicId: video.public_id,
             categories: categories.map(categoryId => new mongoose.Types.ObjectId(categoryId)),
             duration: video.duration,  // in seconds
             tags,
-            thumbnail: optimisedThumbnailUrl,
+            thumbnail: thumbnail.secure_url,
             thumbnailPublicId: thumbnail.public_id
         });
 
@@ -464,7 +450,6 @@ export async function updateVideoById(req, res, next) {
         // Handling Images
         const media = req.file;
         let thumbnail = null;
-        let optimisedThumbnailUrl = null;
 
         if (media) {
             if (!media.mimetype.startsWith("image")) {
@@ -480,8 +465,6 @@ export async function updateVideoById(req, res, next) {
             try {
                 await deleteMultipleMedia([existingVideo.thumbnailPublicId]);
                 thumbnail = await uploadToCloudinary(thumbnailPath);
-
-                optimisedThumbnailUrl = getOptimizedUrl(thumbnail.public_id, thumbnail.resource_type, THUMBNAIL_DIMENSIONS.width, THUMBNAIL_DIMENSIONS.height) || thumbnail.secure_url;
             } catch (error) {
                 console.log("Cloudinary Thumbnail upload error: ", error.message || error);
                 return res.status(400).json({ error: error.message || error, message: "Cloudinary Video & thumbnail upload:: Internal Server Error" });
@@ -493,7 +476,7 @@ export async function updateVideoById(req, res, next) {
             {
                 title: title && title.trim() !== "" ? title : existingVideo.title,
                 description: description && description.trim() !== "" ? description : existingVideo.description,
-                thumbnail: optimisedThumbnailUrl ? optimisedThumbnailUrl : existingVideo.thumbnail,
+                thumbnail: thumbnail ? thumbnail.secure_url : existingVideo.thumbnail,
                 thumbnailPublicId: thumbnail ? thumbnail.public_id : existingVideo.thumbnailPublicId
             },
             { runValidators: true, new: true }

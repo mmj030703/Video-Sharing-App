@@ -7,6 +7,9 @@ function Footer() {
       <p className="font-semibold text-[1.05rem] text-white text-center mt-1">
         Copyright Reserved !
       </p>
+      <p className="font-semibold text-[1.05rem] text-white text-center mt-1">
+        2025
+      </p>
     </article>
   );
 }

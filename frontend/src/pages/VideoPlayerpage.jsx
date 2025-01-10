@@ -58,6 +58,11 @@ function VideoPlayerPage() {
 
   useEffect(() => {
     dispatch(closeSidebar());
+    // Scroll to top after the video changes
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }, [id]);
 
   useEffect(() => {
@@ -641,7 +646,7 @@ function VideoPlayerPage() {
                                     />
                                   </button>
                                   <ul
-                                    className={`z-50 absolute top-5 right-6 ${
+                                    className={`z-40 absolute top-5 right-6 ${
                                       openCommentEditListId !== comment._id
                                         ? "hidden"
                                         : ""

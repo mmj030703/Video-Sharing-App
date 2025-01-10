@@ -19,7 +19,7 @@ function SearchPage() {
 
   async function fetchSearchVideos(title) {
     const res = await fetch(
-      `https://video-sharing-app-2n9p.onrender.com/videos/search/title?query=${title}`
+      `https://video-sharing-app-2n9p.onrender.com/api/v1/videos/search/title?query=${title}`
     );
     const searchVideos = await res.json();
 

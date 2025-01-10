@@ -24,7 +24,7 @@ function Sidebar() {
     <section
       className={`${
         !sidebarOpened && "hidden"
-      } z-30 fixed top-[60px] min-[686px]:top-[68px] max-[450px]:left-2 left-4 bg-slate-700 min-[450px]:min-w-64 py-2 px-2 pe-2 rounded-sm h-screen overflow-y-scroll scrollbar scrollbar-track-slate-600 scrollbar-thumb-slate-400`}>
+      } z-30 fixed top-[60px] min-[686px]:top-[68px] max-[450px]:left-2 left-4 bg-slate-700 min-[450px]:min-w-64 pt-2 pb-20 px-2 pe-2 rounded-sm h-screen overflow-y-scroll scrollbar scrollbar-track-slate-600 scrollbar-thumb-slate-400`}>
       {/* My Section */}
       <section className="flex flex-col gap-y-3 pb-2 w-full hover:">
         <button className="font-semibold text-[1.1rem] text-white cursor-pointer bg-slate-600 rounded-sm">

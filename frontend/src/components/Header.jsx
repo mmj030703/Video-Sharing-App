@@ -199,7 +199,7 @@ function Header() {
               className="flex items-center gap-x-3 hover:bg-slate-600 hover:rounded-sm hover:transition-all py-1 px-2 cursor-pointer">
               <img
                 src={`${user.avatar}`}
-                className="w-10 min-[450[px]:w-12 rounded-full"
+                className="w-10 min-[450px]:w-12 rounded-full"
               />
               <FontAwesomeIcon
                 icon={faCaretDown}
@@ -209,14 +209,14 @@ function Header() {
             <ul
               className={`absolute ${
                 !openAccountNavList ? "hidden" : ""
-              } bg-slate-600 top-16 rounded-md`}>
-              <li className="hover:bg-slate-500 px-3 min-[450px]:py-3 font-semibold text-white text-[1.2rem]">
-                {user.username}
+              } bg-slate-600 top-16 -left-10 rounded-md`}>
+              <li className="w-[140px] hover:bg-slate-500 px-3 min-[450px]:py-2 font-semibold text-white text-[1.2rem]">
+                <p className="break-words">{user.username}</p>
               </li>
               <li>
                 <button
                   onClick={() => handleLogout()}
-                  className="hover:bg-slate-500 font-semibold px-3 py-3 text-red-400 text-[1.2rem]">
+                  className="hover:bg-slate-500 w-full text-left font-semibold px-3 py-2 text-red-400 text-[1.2rem]">
                   Logout
                 </button>
               </li>
@@ -235,19 +235,19 @@ function Header() {
             tailwindTextColorClass={toaster.toasterTailwindTextColorClass}
           />
         )}
+        {showChannelCreateForm && (
+          <CreateChannelForm
+            setToaster={setToaster}
+            setShowForm={setShowChannelCreateForm}
+          />
+        )}
+        {showVideoUploadForm && (
+          <UploadVideoForm
+            setToaster={setToaster}
+            setShowForm={setShowVideoUploadForm}
+          />
+        )}
       </header>
-      {showChannelCreateForm && (
-        <CreateChannelForm
-          setToaster={setToaster}
-          setShowForm={setShowChannelCreateForm}
-        />
-      )}
-      {showVideoUploadForm && (
-        <UploadVideoForm
-          setToaster={setToaster}
-          setShowForm={setShowVideoUploadForm}
-        />
-      )}
     </>
   );
 }

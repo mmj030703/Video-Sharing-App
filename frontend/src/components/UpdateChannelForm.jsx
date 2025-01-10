@@ -43,8 +43,6 @@ function UpdateChannelForm({
   function handleChannelUpdate(e) {
     e?.preventDefault();
 
-    setChannelLoaderLoading(true);
-
     const error = validateFormData(formData);
     if (error) return;
 
@@ -86,6 +84,16 @@ function UpdateChannelForm({
         body: data,
       }
     );
+
+    if (!res) {
+      setChannelLoaderLoading(false);
+      showToaster(
+        "An error occurred while updating the channel ! Please retry.",
+        "text-red-400",
+        setToaster
+      );
+      return;
+    }
 
     const updatedChannel = await res.json();
 
@@ -193,7 +201,7 @@ function UpdateChannelForm({
   }
 
   return (
-    <section className="cursor-not-allowed fixed z-50 top-0 left-0 px-4 min-h-screen w-screen flex flex-col justify-center items-center">
+    <section className="cursor-not-allowed fixed z-40 top-0 left-0 px-4 min-h-screen w-screen flex flex-col justify-center items-center">
       <section className="cursor-pointer bg-slate-700 max-[599px]:w-full p-3 min-[600px]:p-5 rounded-md shadow-2xl">
         <header>
           <h1 className="text-white text-3xl font-semibold max-[600px]:text-center">
