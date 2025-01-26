@@ -13,7 +13,7 @@ function SearchPage() {
   useEffect(() => {
     if (title === "") return;
 
-    // On first render, rendering the serach query
+    // On first render, rendering the search query
     fetchSearchVideos(title);
   }, [searchParams]);
 
@@ -30,7 +30,7 @@ function SearchPage() {
     <section
       className={`${
         sidebarOpened ? "min-[850px]:ml-[270px]" : "ml-0"
-      } py-3 max-[350px]:mt-24 max-[685px]:mt-14`}>
+      } py-3 max-[350px]:mt-24 max-[685px]:mt-14 w-full`}>
       {/* List of videos as per query */}
       <section className="w-full flex flex-col gap-y-2">
         {searchVideos.length ? (
@@ -52,12 +52,15 @@ function SearchPage() {
             };
 
             return (
-              <Link to={`/videos/watch/${video._id}`} key={video._id}>
+              <Link
+                to={`/videos/watch/${video._id}`}
+                key={video._id}
+                className="w-full">
                 <article className="bg-slate-600 rounded-md flex shadow-lg flex-col min-[650px]:flex-row gap-x-4 mt-3">
                   <figure>
                     <img
                       src={video.thumbnail}
-                      className="w-full min-[650px]:min-w-[260px] min-[650px]:w-[260px] h-[200px] min-[650px]:h-full object-cover rounded-md min-[650px]:rounded-s-md"
+                      className="w-full min-[650px]:min-w-[260px] min-[650px]:w-[260px] h-[200px] object-cover rounded-md min-[650px]:rounded-s-md"
                     />
                   </figure>
                   <article className="text-white font-semibold py-3 min-[650px]:py-1 px-2 min-[650px]:px-0">
@@ -66,7 +69,7 @@ function SearchPage() {
                       <figure>
                         <img
                           src={video.channel.avatar}
-                          className="w-8 rounded-full mt-1"
+                          className="w-8 h-8 rounded-full mt-1"
                         />
                       </figure>
                       <p className="text-[15px] text-slate-300">

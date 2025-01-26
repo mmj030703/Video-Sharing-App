@@ -199,7 +199,7 @@ function Header() {
               className="flex items-center gap-x-3 hover:bg-slate-600 hover:rounded-sm hover:transition-all py-1 px-2 cursor-pointer">
               <img
                 src={`${user.avatar}`}
-                className="w-10 min-[450px]:w-12 rounded-full"
+                className="w-10 h-10 min-[450px]:w-12 rounded-full"
               />
               <FontAwesomeIcon
                 icon={faCaretDown}

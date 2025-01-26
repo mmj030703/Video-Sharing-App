@@ -503,7 +503,7 @@ function VideoPlayerPage() {
                       <article className="flex gap-x-3 items-center">
                         <img
                           src={video.video.channel.avatar}
-                          className="rounded-full w-14"
+                          className="rounded-full w-14 h-14"
                         />
                         <article>
                           <p className="font-semibold">
@@ -695,7 +695,7 @@ function VideoPlayerPage() {
             </section>
 
             {/* Recommended Videos Section */}
-            <section>
+            <section className="flex flex-col gap-y-3">
               {recommendedVideos.length ? (
                 recommendedVideos.map((video) => {
                   const date = new Date(video.createdAt);
@@ -715,12 +715,15 @@ function VideoPlayerPage() {
                   };
 
                   return (
-                    <Link to={`/videos/watch/${video._id}`} key={video._id}>
-                      <article className="bg-slate-600 rounded-md flex flex-col min-[650px]:flex-row gap-x-4 mt-3">
+                    <Link
+                      to={`/videos/watch/${video._id}`}
+                      key={video._id}
+                      className="min-w-[350px] min-[1150px]:w-full">
+                      <article className="bg-slate-600 rounded-md flex flex-col min-[650px]:flex-row gap-x-4">
                         <figure>
                           <img
                             src={video.thumbnail}
-                            className="w-full min-[650px]:min-w-[170px] min-[650px]:w-[170px] h-[200px] min-[650px]:h-full object-cover rounded-md min-[650px]:rounded-s-md"
+                            className="w-full min-[650px]:min-w-[170px] min-[650px]:w-[170px] h-[170px] object-cover rounded-md min-[650px]:rounded-s-md"
                           />
                         </figure>
                         <article className="text-white font-semibold py-2 min-[650px]:py-1 px-2 min-[650px]:ps-1 min-[650px]:pe-2">
@@ -729,7 +732,7 @@ function VideoPlayerPage() {
                             <figure>
                               <img
                                 src={video.channel.avatar}
-                                className="w-8 rounded-full mt-1"
+                                className="w-8 h-8 rounded-full mt-1"
                               />
                             </figure>
                             <p className="text-[14px] text-slate-300">

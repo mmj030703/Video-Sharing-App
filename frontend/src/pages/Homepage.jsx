@@ -55,7 +55,7 @@ function HomePage() {
       </section>
 
       {/* List of videos as per categories */}
-      <section className="mt-6 grid max-[550px]:place-items-center grid-cols-[repeat(auto-fit, minmax(1fr,1fr))] min-[550px]:grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-x-4 gap-y-5">
+      <section className="mt-6 grid max-[550px]:place-items-center min-[550px]:grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-x-4 gap-y-5">
         {homepageVideos.length ? (
           homepageVideos.map((video) => {
             const date = new Date(video.createdAt);
@@ -78,8 +78,8 @@ function HomePage() {
               <Link
                 to={`/videos/watch/${video._id}`}
                 key={video._id}
-                className="bg-red-500 w-fit">
-                <article className="bg-slate-600 rounded-md min-[550px]:max-w-[400px] min-h-[350px]">
+                className="w-full">
+                <article className="bg-slate-600 rounded-md min-h-[350px]">
                   <figure>
                     <img
                       src={video.thumbnail}
@@ -90,7 +90,7 @@ function HomePage() {
                     <figure>
                       <img
                         src={video.channel.avatar}
-                        className="w-10 rounded-full mt-1"
+                        className="w-10 h-10 rounded-full mt-1"
                       />
                     </figure>
                     <article className="text-white font-semibold ">

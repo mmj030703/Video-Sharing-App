@@ -165,7 +165,7 @@ function ChannelPage() {
               <img
                 src={channel?.avatar}
                 alt="Channel Avatar"
-                className="rounded-full w-40 min-[650px]:w-48"
+                className="rounded-full w-40 h-40 min-[650px]:w-48"
               />
             </figure>
           )}
