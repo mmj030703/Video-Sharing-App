@@ -78,7 +78,7 @@ function HomePage() {
               <Link
                 to={`/videos/watch/${video._id}`}
                 key={video._id}
-                className="w-full">
+                className="bg-red-500 w-fit">
                 <article className="bg-slate-600 rounded-md min-[550px]:max-w-[400px] min-h-[350px]">
                   <figure>
                     <img

@@ -91,7 +91,7 @@ function UploadVideoForm({ setToaster, setShowForm }) {
     );
 
     const res = await fetch(
-      `https://video-sharing-app-2n9p.onrender.com/api/v1/channels/videos/upload`,
+      `http://localhost:3000/api/v1/channels/videos/upload`,
       {
         method: "POST",
         body: data,
@@ -120,7 +120,7 @@ function UploadVideoForm({ setToaster, setShowForm }) {
       );
 
       const res = await fetch(
-        `https://video-sharing-app-2n9p.onrender.com/api/v1/videos/category/all`
+        `http://localhost:3000/api/v1/videos/category/all`
       );
       const homepageVideos = await res.json();
 
